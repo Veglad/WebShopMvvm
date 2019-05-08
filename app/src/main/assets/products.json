@@ -1,0 +1,44 @@
+[
+  {
+    "id": 0,
+    "name": "Iphone X",
+    "description": "Some IPhoneX description",
+    "price": 1099.0,
+    "imageUrl": "https://i.allo.ua/media/catalog/product/cache/1/image/425x295/799896e5c6c37e11608b9f8e1d047d15/a/p/apple_iphone_x_64gb_mqac2_space_grey_4.jpg"
+  },
+  {
+    "id": 1,
+    "name": "Iphone XS",
+    "description": "Some IPhoneXS description",
+    "price": 1200.0,
+    "imageUrl": "https://hotline.ua/img/tx/178/178801049_s265.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Iphone X",
+    "description": "Some IPhoneX description",
+    "price": 1099.0,
+    "imageUrl": "https://i.allo.ua/media/catalog/product/cache/1/image/425x295/799896e5c6c37e11608b9f8e1d047d15/a/p/apple_iphone_x_64gb_mqac2_space_grey_4.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Iphone XS",
+    "description": "Some IPhoneXS description",
+    "price": 1200.0,
+    "imageUrl": "https://hotline.ua/img/tx/178/178801049_s265.jpg"
+  },
+  {
+    "id": 4,
+    "name": "Iphone X",
+    "description": "Some IPhoneX description",
+    "price": 1099.0,
+    "imageUrl": "https://i.allo.ua/media/catalog/product/cache/1/image/425x295/799896e5c6c37e11608b9f8e1d047d15/a/p/apple_iphone_x_64gb_mqac2_space_grey_4.jpg"
+  },
+  {
+    "id": 5,
+    "name": "Iphone XS",
+    "description": "Some IPhoneXS description",
+    "price": 1200.0,
+    "imageUrl": "https://hotline.ua/img/tx/178/178801049_s265.jpg"
+  }
+]

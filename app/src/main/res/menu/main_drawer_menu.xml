@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group>
+        <item android:id="@+id/nav_main_basket"
+              android:icon="@drawable/basket_gray"
+              android:title="@string/basket"/>
+        <item android:id="@+id/nav_main_bought"
+              android:icon="@drawable/ic_basket_paid_gray"
+              android:title="@string/bought"/>
+        <item android:id="@+id/nav_main_log_out"
+              android:icon="@drawable/log_out_gray"
+              android:title="@string/log_out"/>
+    </group>
+</menu>

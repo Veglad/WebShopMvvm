@@ -1,0 +1,72 @@
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/color_accent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.BlackMode">
+        <item name="colorPrimary">@color/dark_gray</item>
+        <item name="colorPrimaryDark">@color/gray</item>
+        <item name="colorAccent">@color/color_accent</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="checkBoxStyle" parent="AppTheme.BlackMode">
+        <item name="colorAccent">@color/primary_light</item>
+        <item name="android:textColorSecondary">@color/primary_light</item>
+    </style>
+
+    <style name="ButtonPrimaryStyle">
+        <item name="android:background">@drawable/button_primary_drawable</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:layout_width">wrap_content</item>
+    </style>
+
+    <style name="TextHeaderStyle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/primary_dark</item>
+    </style>
+
+    <style name="TextBasketPrimaryStyle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="TextBasketTitleStyle">
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="NumberPickerText">
+        <item name="android:textSize">22sp</item>
+    </style>
+
+    <style name="OrderTextInputLabel" parent="Theme.AppCompat">
+        <!-- Hint color and label color in FALSE state-->
+        <item name="android:textColorHint">@color/primary_dark</item>
+        <!-- Label color in TRUE state and bar color FALSE and TRUE State -->
+        <item name="colorAccent">@color/dark_gray</item>
+        <item name="colorControlNormal">@color/primary_dark</item>
+        <item name="colorControlActivated">@color/primary_dark</item>
+    </style>
+
+    <style name="TextInputLabel" parent="Theme.AppCompat">
+        <!-- Hint color and label color in FALSE state-->
+        <item name="android:textColorHint">@color/white</item>
+        <!-- Label color in TRUE state and bar color FALSE and TRUE State -->
+        <item name="colorAccent">@color/dark_gray</item>
+        <item name="colorControlNormal">@color/white</item>
+        <item name="colorControlActivated">@color/white</item>
+    </style>
+
+    <style name="TextInputLabelErrorState" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/color_accent</item>
+    </style>
+</resources>
