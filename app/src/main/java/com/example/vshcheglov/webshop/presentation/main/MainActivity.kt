@@ -28,7 +28,6 @@ import kotlinx.android.synthetic.main.main_products.*
 import kotlinx.android.synthetic.main.main_search_empty.*
 import kotlinx.android.synthetic.main.main_search_list.*
 import nucleus5.factory.RequiresPresenter
-import nucleus5.view.NucleusAppCompatActivity
 import android.app.Activity
 import android.content.ComponentName
 import android.graphics.Bitmap
@@ -40,17 +39,21 @@ import androidx.core.content.FileProvider
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.vshcheglov.webshop.BuildConfig
+import com.example.vshcheglov.webshop.presentation.helpres.Event
+import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-@RequiresPresenter(MainPresenter::class)
-class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.MainView {
+class MainActivity : AppCompatActivity() {
 
     companion object {
         const val PICK_IMAGE_REQUEST_CODE = 14561
@@ -65,6 +68,7 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
     private var snackbar: Snackbar? = null
     private val productsRecyclerAdapter = ProductsRecyclerAdapter(this)
     private val searchRecyclerAdapter = SearchRecyclerAdapter(this)
+    private lateinit var viewModel: MainViewModel
 
     private lateinit var toggle: ActionBarDrawerToggle
     private var isErrorVisible = false
@@ -73,13 +77,15 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        presenter?.loadProducts(isNetworkAvailable())
+        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+        initViewModelObservers()
+        viewModel.loadProducts(isNetworkAvailable())
 
         tryAgainButton.setOnClickListener {
             val isNetworkAvailable = isNetworkAvailable()
 
             setErrorVisibility(!isNetworkAvailable)
-            presenter?.loadProducts(isNetworkAvailable)
+            viewModel.forceLoadProducts(isNetworkAvailable)
             if (isNetworkAvailable) {
                 snackbar?.dismiss()
             }
@@ -88,7 +94,7 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
         productsSwipeRefreshLayout.setOnRefreshListener {
             val isNetworkAvailable = isNetworkAvailable()
 
-            presenter?.loadProducts(isNetworkAvailable)
+            viewModel.forceLoadProducts(isNetworkAvailable)
             if (isNetworkAvailable) {
                 snackbar?.dismiss()
             }
@@ -120,15 +126,36 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
         initNavigationDrawer()
     }
 
+    private fun initViewModelObservers() {
+        viewModel.searchProductList.observe(this,
+            Observer<List<Product>> { products -> showSearchedProducts(products) })
+        viewModel.productList.observe(this,
+            Observer<MutableList<Product>> { products -> showProductList(products) })
+        viewModel.promotionalProductList.observe(this,
+            Observer<MutableList<Product>> { products -> showPromotionalProductList(products) })
+        viewModel.isLoading.observe(this, Observer<Boolean> { isLoading -> showLoading(isLoading) })
+        viewModel.avatarImage.observe(this, Observer<Bitmap?> { bitmap -> setUserAvatarImage(bitmap) })
+        viewModel.userEmail.observe(this, Observer<String?> { email -> showUserEmail(email) })
+        viewModel.showError.observe(this, Observer<EventWithContent<Exception>> { event ->
+            event.getContentIfNotHandled()?.let { ex -> showError(ex) }
+        })
+        viewModel.showNoInternetWarning.observe(this, Observer<Event> { event ->
+            event.performEventIfNotHandled { showNoInternetWarning() }
+        })
+        viewModel.startLoginActivity.observe(this, Observer<Event> { event ->
+            event.performEventIfNotHandled { startLoginActivity() }
+        })
+    }
+
     private fun onBuyClicked(product: Product) {
-        presenter.buyProduct(product)
+        viewModel.buyProduct(product)
         startBasketActivity()
     }
 
     private fun initNavigationDrawer() {
         mainNavigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.nav_main_log_out -> presenter.logOut()
+                R.id.nav_main_log_out -> viewModel.logOut()
                 R.id.nav_main_basket -> startBasketActivity()
                 R.id.nav_main_bought -> startActivity(Intent(this, PurchaseActivity::class.java))
             }
@@ -179,9 +206,19 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
         startActivityForResult(openInChooser, PICK_IMAGE_REQUEST_CODE)
     }
 
-    override fun setUserAvatarImage(bitmap: Bitmap) {
+    private fun setUserAvatarImage(bitmap: Bitmap?) {
         navHeaderUserImage = navMainHeader.findViewById(R.id.navHeaderUserImage)
-        Glide.with(this).load(bitmap).apply(RequestOptions.circleCropTransform()).into(navHeaderUserImage)
+        if (bitmap == null) {
+            Glide.with(this).load(R.drawable.profile_avatar_placeholder_large).into(navHeaderUserImage)
+        } else {
+            Glide.with(this).load(bitmap).apply(RequestOptions.circleCropTransform()).into(navHeaderUserImage)
+        }
+    }
+
+    private fun showUserEmail(email: String?) {
+        email?.let {
+            headerUserEmail.text = it
+        }
     }
 
     private fun getPickImageIntent() = Intent(Intent.ACTION_PICK).also { imagePickIntent ->
@@ -249,7 +286,7 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
                     val profilePhotoBitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedImage)
                     profilePhotoBitmap?.let {
                         currentPhotoPath = ""
-                        presenter.updateUserProfilePhoto(profilePhotoBitmap)
+                        viewModel.updateUserProfilePhoto(profilePhotoBitmap)
                     }
 
                     if (currentPhotoPath.isNotEmpty()) {
@@ -266,7 +303,7 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
         file.delete()
     }
 
-    override fun showLoading(isLoading: Boolean) {
+    private fun showLoading(isLoading: Boolean) {
         productsSwipeRefreshLayout.isRefreshing = isLoading
         if (isLoading) {
             productsRecyclerView.visibility = View.INVISIBLE
@@ -275,7 +312,7 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
         }
     }
 
-    override fun showNoInternetWarning() {
+    private fun showNoInternetWarning() {
         val isNetworkAvailable = isNetworkAvailable()
         snackbar = Snackbar.make(
             mainFrameLayout,
@@ -286,17 +323,17 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
                 setErrorVisibility(false)
             }
 
-            presenter?.loadProducts(isNetworkAvailable)
+            viewModel.loadProducts(isNetworkAvailable)
             snackbar?.dismiss()
         }
         snackbar?.show()
     }
 
-    override fun showError(throwable: Throwable) {
+    private fun showError(exception: Exception) {
         setErrorVisibility(true)
     }
 
-    override fun showProductList(productList: MutableList<Product>) {
+    private fun showProductList(productList: MutableList<Product>) {
         setErrorVisibility(false)
         productsRecyclerAdapter.apply {
             setProductList(productList)
@@ -304,19 +341,31 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
         }
     }
 
-    override fun showPromotionalProductList(promotionalList: List<Product>) {
+    private fun showPromotionalProductList(promotionalList: List<Product>) {
         setErrorVisibility(false)
         productsRecyclerAdapter.updatePromotionalList(promotionalList)
     }
 
-    override fun startLoginActivity() {
-        startActivity(Intent(this, LoginActivity::class.java))
+    private fun showSearchedProducts(productList: List<Product>) {
+        if (productList.isEmpty()) {
+            showSearchProductsNoResults()
+        } else {
+            showLayout(MainLayouts.SEARCH_PRODUCTS)
+            searchRecyclerAdapter.apply {
+                this.productList.clear()
+                this.productList.addAll(productList)
+                notifyDataSetChanged()
+            }
+        }
     }
 
-    override fun showUserEmail(email: String?) {
-        email?.let {
-            headerUserEmail.text = it
-        }
+    private fun showSearchProductsNoResults() {
+        showLayout(MainLayouts.SEARCH_EMPTY)
+        mainSearchEmptyTextView.text = resources.getString(R.string.no_search_result)
+    }
+
+    private fun startLoginActivity() {
+        startActivity(Intent(this, LoginActivity::class.java))
     }
 
     private fun setErrorVisibility(isVisible: Boolean) {
@@ -344,7 +393,7 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
         }
     }
 
-    override fun startBasketActivity() {
+    private fun startBasketActivity() {
         startActivity(Intent(this, BasketActivity::class.java))
     }
 
@@ -372,7 +421,7 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
                             showLayout(MainLayouts.SEARCH_EMPTY)
                             mainSearchEmptyTextView.text = resources.getString(R.string.search_list_empty_query)
                         } else {
-                            presenter.searchProducts(searchText)
+                            viewModel.searchProducts(searchText)
                         }
                         return true
                     }
@@ -395,20 +444,6 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
         }
 
         return true
-    }
-
-    override fun showNoResults() {
-        showLayout(MainLayouts.SEARCH_EMPTY)
-        mainSearchEmptyTextView.text = resources.getString(R.string.no_search_result)
-    }
-
-    override fun showSearchedProducts(productList: List<Product>) {
-        showLayout(MainLayouts.SEARCH_PRODUCTS)
-        searchRecyclerAdapter.apply {
-            this.productList.clear()
-            this.productList.addAll(productList)
-            notifyDataSetChanged()
-        }
     }
 
     fun showLayout(mainLayouts: MainLayouts) {
@@ -435,13 +470,5 @@ class MainActivity : NucleusAppCompatActivity<MainPresenter>(), MainPresenter.Ma
 
     enum class MainLayouts {
         PRODUCTS, SEARCH_PRODUCTS, SEARCH_EMPTY, ERROR
-    }
-
-    override fun showEmailLoadError(throwable: Throwable) {
-        showUserEmail("")
-    }
-
-    override fun showAvatarLoadError(throwable: Throwable) {
-        setUserAvatarImage(BitmapFactory.decodeResource(resources, R.drawable.profile_avatar_placeholder_large))
     }
 }
