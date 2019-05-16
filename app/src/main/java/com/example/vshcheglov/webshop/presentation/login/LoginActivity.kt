@@ -7,11 +7,15 @@ import android.text.InputType
 import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.extensions.canUseFingerprint
 import com.example.vshcheglov.webshop.extensions.getFingerprintSensorState
 import com.example.vshcheglov.webshop.extensions.isNetworkAvailable
+import com.example.vshcheglov.webshop.presentation.helpres.Event
 import com.example.vshcheglov.webshop.presentation.helpres.FingerprintState
 import com.example.vshcheglov.webshop.presentation.helpres.MainThreadExecutor
 import com.example.vshcheglov.webshop.presentation.main.MainActivity
@@ -23,28 +27,28 @@ import nucleus5.factory.RequiresPresenter
 import nucleus5.view.NucleusAppCompatActivity
 import java.lang.Exception
 
-@RequiresPresenter(LoginViewModel::class)
-class LoginActivity : NucleusAppCompatActivity<LoginViewModel>(), LoginViewModel.View {
+class LoginActivity : AppCompatActivity() {
+
+    private lateinit var viewModel: LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        viewModel = ViewModelProviders.of(this).get(LoginViewModel::class.java)
+        initViewModelObservers()
+
         orderButton.setOnClickListener {
             emailTextInput.error = ""
             passwordTextInput.error = ""
-            presenter.logInUser(
+            viewModel.logInUser(
                 loginEmail.text.toString(),
                 loginPassword.text.toString(), isNetworkAvailable()
             )
         }
 
-        buttonRegister.setOnClickListener {
-            presenter.registerUser()
-        }
-        useFingerprintButton.setOnClickListener {
-            prepareBiometricPrompt()
-        }
+        buttonRegister.setOnClickListener { startRegisterActivity() }
+        useFingerprintButton.setOnClickListener { prepareBiometricPrompt() }
         showPasswordButton.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> loginPassword.inputType = InputType.TYPE_CLASS_TEXT
@@ -56,28 +60,71 @@ class LoginActivity : NucleusAppCompatActivity<LoginViewModel>(), LoginViewModel
         }
     }
 
+    private fun initViewModelObservers() {
+        viewModel.showEmailInvalid.observe(this,
+            Observer<Event> { event ->
+                event.performEventIfNotHandled { emailTextInput.error = getString(R.string.email_error) }
+            })
+        viewModel.showPasswordIsInvalid.observe(this,
+            Observer<Event> { event ->
+                event.performEventIfNotHandled { passwordTextInput.error = getString(R.string.password_error) }
+            })
+        viewModel.showNoInternet.observe(this,
+            Observer<Event> { event ->
+                event.performEventIfNotHandled { showMessage(getString(R.string.no_internet_connection_warning)) }
+            })
+        viewModel.startMainScreen.observe(this,
+            Observer<Event> { event ->
+                event.performEventIfNotHandled { startMainActivity() }
+            })
+        viewModel.showBiometricError.observe(this,
+            Observer<Event> { event ->
+                event.performEventIfNotHandled { showMessage(getString(R.string.biometric_error)) }
+            })
+        viewModel.showNewBiometricEnrolled.observe(this,
+            Observer<Event> { event ->
+                event.performEventIfNotHandled { showMessage(getString(R.string.biometric_enrolled_error_text)) }
+            })
+        viewModel.hideBiometricPrompt.observe(this,
+            Observer<Event> { event ->
+                event.performEventIfNotHandled { hideBiometricPromptFeature() }
+            })
+        viewModel.isLoading.observe(this,
+            Observer<Boolean> { isLoading ->
+                setShowProgress(isLoading)
+            })
+        viewModel.loginError.observe(this,
+            Observer<Exception> { exception ->
+                showLoginError(exception)
+            })
+        viewModel.showBiometricPrompt.observe(this,
+            Observer<BiometricPrompt.CryptoObject> { cryptoObject ->
+                showBiometricPrompt(cryptoObject)
+            })
+        viewModel.userEmail.observe(this,
+            Observer<String> { email ->
+                loginEmail.setText(email, TextView.BufferType.EDITABLE)
+            })
+    }
+
     private fun prepareBiometricPrompt() {
         if (canUseFingerprint() && getFingerprintSensorState() == FingerprintState.READY) {
-            presenter.useBiometricPrompt()
+            viewModel.useBiometricPrompt()
         } else {
             useFingerprintButton.visibility = View.GONE
         }
     }
 
-    override fun hideBiometricPromptFeature() {
+    private fun hideBiometricPromptFeature() {
         useFingerprintButton.visibility = View.GONE
     }
 
-    override fun showUserEmail(email: String) {
-        loginEmail.setText(email, TextView.BufferType.EDITABLE)
-    }
-
-    override fun showBiometricPrompt(cryptoObject: BiometricPrompt.CryptoObject) {
+    private fun showBiometricPrompt(cryptoObject: BiometricPrompt.CryptoObject) {
         val biometricPrompt = BiometricPrompt(this, MainThreadExecutor(),
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     super.onAuthenticationSucceeded(result)
-                    presenter.authenticateUser(result.cryptoObject?.cipher, isNetworkAvailable())
+                    viewModel.authenticateUser(result.cryptoObject?.cipher, isNetworkAvailable())
                 }
             })
 
@@ -90,21 +137,13 @@ class LoginActivity : NucleusAppCompatActivity<LoginViewModel>(), LoginViewModel
         biometricPrompt.authenticate(promptInfo, cryptoObject)
     }
 
-    override fun showBiometricError() {
-        showMessage(getString(R.string.biometric_error))
-    }
-
-    override fun showNewBiometricEnrolledError() {
-        showMessage(getString(R.string.biometric_enrolled_error_text))
-    }
-
-    override fun startMainActivity() {
+    private fun startMainActivity() {
         startActivity(Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
         })
     }
 
-    override fun showLoginError(exception: Exception?) {
+    private fun showLoginError(exception: Exception) {
         val errorMessage = when (exception) {
             is FirebaseAuthInvalidUserException -> {
                 resources.getString(R.string.incorrect_email_for_user)
@@ -119,29 +158,17 @@ class LoginActivity : NucleusAppCompatActivity<LoginViewModel>(), LoginViewModel
         showMessage(errorMessage)
     }
 
-    override fun startRegisterActivity() {
+    private fun startRegisterActivity() {
         Intent(this, RegisterActivity::class.java).apply {
             startActivity(this)
         }
-    }
-
-    override fun showNoInternetError() {
-        showMessage(resources.getString(R.string.no_internet_connection_warning))
     }
 
     private fun showMessage(message: String) {
         Snackbar.make(loginConstraintLayout, message, Snackbar.LENGTH_LONG).show()
     }
 
-    override fun showInvalidEmail() {
-        emailTextInput.error = resources.getString(R.string.email_error)
-    }
-
-    override fun showInvalidPassword() {
-        passwordTextInput.error = resources.getString(R.string.password_error)
-    }
-
-    override fun setShowProgress(isLoading: Boolean) {
+    private fun setShowProgress(isLoading: Boolean) {
         if (isLoading) {
             orderButton.startAnimation()
         } else {
