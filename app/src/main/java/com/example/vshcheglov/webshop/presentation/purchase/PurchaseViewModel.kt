@@ -9,7 +9,7 @@ import nucleus5.presenter.Presenter
 import timber.log.Timber
 import javax.inject.Inject
 
-class PurchasePresenter : Presenter<PurchasePresenter.View>() {
+class PurchaseViewModel : Presenter<PurchaseViewModel.View>() {
 
     @Inject
     lateinit var dataProvider: DataProvider

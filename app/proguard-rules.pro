@@ -24,7 +24,7 @@
 -keep class com.example.vshcheglov.webshop.domain.** { *; }
 -keep class com.example.vshcheglov.webshop.data.entities.** { *; }
 -keep class com.example.vshcheglov.webshop.presentation.entities.** { *; }
--keep class com.example.vshcheglov.webshop.presentation.purchase.PurchasePresenter { *; }
+-keep class com.example.vshcheglov.webshop.presentation.purchase.PurchaseViewModel { *; }
 -dontwarn com.example.vshcheglov.webshop.data.entities.**
 
 #androidx

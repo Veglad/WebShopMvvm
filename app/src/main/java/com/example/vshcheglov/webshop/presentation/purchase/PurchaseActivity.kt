@@ -19,8 +19,8 @@ import com.shashank.sony.fancydialoglib.FancyAlertDialog
 import com.shashank.sony.fancydialoglib.Icon
 
 
-@RequiresPresenter(PurchasePresenter::class)
-class PurchaseActivity : NucleusAppCompatActivity<PurchasePresenter>(), PurchasePresenter.View {
+@RequiresPresenter(PurchaseViewModel::class)
+class PurchaseActivity : NucleusAppCompatActivity<PurchaseViewModel>(), PurchaseViewModel.View {
 
     companion object {
         const val COLUMNS_NUMBER = 2

@@ -11,7 +11,7 @@ import com.example.vshcheglov.webshop.data.users.UserRepository
 import com.example.vshcheglov.webshop.data.users.UserNetworkDataSource
 import com.example.vshcheglov.webshop.data.users.UserStorage
 import com.example.vshcheglov.webshop.presentation.basket.BasketPresenter
-import com.example.vshcheglov.webshop.presentation.purchase.PurchasePresenter
+import com.example.vshcheglov.webshop.presentation.purchase.PurchaseViewModel
 import com.example.vshcheglov.webshop.presentation.di.modules.*
 import com.example.vshcheglov.webshop.presentation.login.LoginViewModel
 import com.example.vshcheglov.webshop.presentation.main.MainViewModel
@@ -37,7 +37,7 @@ interface AppComponent {
     fun inject(loginPresenter: LoginViewModel)
     fun inject(registerPresenter: RegisterViewModel)
     fun inject(orderPresenter: OrderPresenter)
-    fun inject(boughtPresenter: PurchasePresenter)
+    fun inject(boughtPresenter: PurchaseViewModel)
     fun inject(usersRepository: UserRepository)
     fun inject(userNetwork: UserNetworkDataSource)
     fun inject(dataProvider: DataProvider)
