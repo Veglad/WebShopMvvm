@@ -14,8 +14,8 @@ import java.lang.Exception
 import javax.crypto.Cipher
 import javax.inject.Inject
 
-class LoginPresenter : Presenter<LoginPresenter.View>() {
-
+class LoginViewModel : Presenter<LoginViewModel.View>() {
+    
     @Inject
     lateinit var dataProvider: DataProvider
     @Inject

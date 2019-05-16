@@ -2,7 +2,6 @@ package com.example.vshcheglov.webshop.presentation.login
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
 import com.google.android.material.snackbar.Snackbar
 import android.text.InputType
 import android.view.MotionEvent
@@ -24,8 +23,8 @@ import nucleus5.factory.RequiresPresenter
 import nucleus5.view.NucleusAppCompatActivity
 import java.lang.Exception
 
-@RequiresPresenter(LoginPresenter::class)
-class LoginActivity : NucleusAppCompatActivity<LoginPresenter>(), LoginPresenter.View {
+@RequiresPresenter(LoginViewModel::class)
+class LoginActivity : NucleusAppCompatActivity<LoginViewModel>(), LoginViewModel.View {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
