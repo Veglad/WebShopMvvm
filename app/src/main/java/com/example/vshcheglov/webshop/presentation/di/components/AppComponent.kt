@@ -16,7 +16,7 @@ import com.example.vshcheglov.webshop.presentation.di.modules.*
 import com.example.vshcheglov.webshop.presentation.login.LoginPresenter
 import com.example.vshcheglov.webshop.presentation.main.MainViewModel
 import com.example.vshcheglov.webshop.presentation.order.OrderPresenter
-import com.example.vshcheglov.webshop.presentation.registration.RegisterPresenter
+import com.example.vshcheglov.webshop.presentation.registration.RegisterViewModel
 import dagger.Component
 import javax.inject.Singleton
 
@@ -35,7 +35,7 @@ interface AppComponent {
     fun inject(networkDataSource: ProductNetworkDataSource)
     fun inject(productRepository: ProductRepository)
     fun inject(loginPresenter: LoginPresenter)
-    fun inject(registerPresenter: RegisterPresenter)
+    fun inject(registerPresenter: RegisterViewModel)
     fun inject(orderPresenter: OrderPresenter)
     fun inject(boughtPresenter: PurchasePresenter)
     fun inject(usersRepository: UserRepository)

@@ -54,7 +54,7 @@
     <string name="successfully_authorized">Successfully authorized!</string>
     <string name="email_address_collision">The email address is already in use</string>
     <string name="confirm_password">Confirm password</string>
-    <string name="password_not_match">Passwords do not match</string>
+    <string name="passwords_not_match">Passwords do not match</string>
     <string name="log_out">Log out</string>
     <string name="basket">Basket</string>
     <string name="basket_empty_title">Basket is empty</string>
