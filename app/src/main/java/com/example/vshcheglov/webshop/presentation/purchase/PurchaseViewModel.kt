@@ -1,72 +1,71 @@
 package com.example.vshcheglov.webshop.presentation.purchase
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.example.vshcheglov.webshop.App
 import com.example.vshcheglov.webshop.data.DataProvider
 import com.example.vshcheglov.webshop.domain.OrderProduct
+import com.example.vshcheglov.webshop.presentation.helpres.Event
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.*
-import nucleus5.presenter.Presenter
 import timber.log.Timber
 import javax.inject.Inject
 
-class PurchaseViewModel : Presenter<PurchaseViewModel.View>() {
+class PurchaseViewModel : ViewModel() {
 
     @Inject
     lateinit var dataProvider: DataProvider
 
-    private lateinit var job: Job
-    private lateinit var uiCoroutineScope: CoroutineScope
+    private val job: Job = Job()
+    private val uiCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + job)
+
+    private val _showNoProducts = MutableLiveData<Event>()
+    val showNoProducts: LiveData<Event>
+        get() = _showNoProducts
+
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean>
+        get() = _isLoading
+
+    private val _showProductsLoadingError = MutableLiveData<Exception>()
+    val showProductsLoadingError: LiveData<Exception>
+        get() = _showProductsLoadingError
+
+    private val _products = MutableLiveData<List<Pair<OrderProduct, Timestamp>>>()
+    val products: LiveData<List<Pair<OrderProduct, Timestamp>>>
+        get() = _products
 
     init {
         App.appComponent.inject(this)
+        loadPurchasedProducts()
     }
 
-    override fun onTakeView(view: View?) {
-        super.onTakeView(view)
-        initCoroutineJob()
-        loadPurchasedProducts(view)
-    }
-
-    private fun loadPurchasedProducts(view: View?) {
+    fun loadPurchasedProducts() {
         uiCoroutineScope.launch {
             try {
-                view?.setShowLoading(true)
+                _isLoading.value = true
                 val orderList = withContext(Dispatchers.IO) { dataProvider.getUserOrders() }
 
                 if (orderList.isNotEmpty()) {
                     val productToTimeStampList = orderList.map { order ->
                         order.orderProducts.map { Pair(it, order.timestamp) }
                     }.flatten()
-                    view?.showProducts(productToTimeStampList)
+                    _products.value = productToTimeStampList
                 } else {
-                    view?.showNoData()
+                    _showNoProducts.value = Event()
                 }
             } catch (ex: Exception) {
                 Timber.d("Getting user products error: $ex")
-                view?.showProductsFetchingError(ex)
+                _showProductsLoadingError.value = ex
             } finally {
-                view?.setShowLoading(false)
+                _isLoading.value = false
             }
         }
     }
 
-    private fun initCoroutineJob() {
-        job = Job()
-        uiCoroutineScope = CoroutineScope(Dispatchers.Main + job)
-    }
-
-    override fun onDropView() {
-        super.onDropView()
+    override fun onCleared() {
+        super.onCleared()
         job.cancel()
-    }
-
-    interface View {
-        fun showProducts(productToTimeStampList: List<Pair<OrderProduct, Timestamp>>)
-
-        fun showProductsFetchingError(exception: Exception)
-
-        fun showNoData()
-
-        fun setShowLoading(isLoading: Boolean)
     }
 }

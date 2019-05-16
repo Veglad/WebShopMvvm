@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.OrderProduct
 import com.example.vshcheglov.webshop.presentation.main.MainActivity
@@ -14,23 +15,28 @@ import kotlinx.android.synthetic.main.purchase_list_layout.*
 import nucleus5.factory.RequiresPresenter
 import nucleus5.view.NucleusAppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.example.vshcheglov.webshop.presentation.helpres.Event
 import com.shashank.sony.fancydialoglib.Animation
 import com.shashank.sony.fancydialoglib.FancyAlertDialog
 import com.shashank.sony.fancydialoglib.Icon
 
-
-@RequiresPresenter(PurchaseViewModel::class)
-class PurchaseActivity : NucleusAppCompatActivity<PurchaseViewModel>(), PurchaseViewModel.View {
+class PurchaseActivity : AppCompatActivity() {
 
     companion object {
         const val COLUMNS_NUMBER = 2
     }
 
     private lateinit var boughtRecyclerAdapter: PurchaseRecyclerAdapter
+    private lateinit var viewModel: PurchaseViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_purchase)
+
+        viewModel = ViewModelProviders.of(this).get(PurchaseViewModel::class.java)
+        initViewModelObservers()
 
         setSupportActionBar(boughtToolbar)
         supportActionBar?.let {
@@ -41,21 +47,33 @@ class PurchaseActivity : NucleusAppCompatActivity<PurchaseViewModel>(), Purchase
         messageActionLayoutButton.setOnClickListener { startMainActivity() }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
-            android.R.id.home -> finish()
-        }
+    private fun initViewModelObservers() {
+        viewModel.isLoading.observe(this,
+            Observer<Boolean> { isLoading ->
+                purchaseProgressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            })
+        viewModel.products.observe(this,
+            Observer<List<Pair<OrderProduct, Timestamp>>> { products ->
+                showProducts(products)
+            })
+        viewModel.showProductsLoadingError.observe(this,
+            Observer<Exception> { ex ->
+                showProductsFetchingError(ex)
+            })
+        viewModel.showNoProducts.observe(this,
+            Observer<Event> { products ->
+                showNoData()
+            })
 
-        return false
     }
 
-    override fun showProducts(productToTimeStampList: List<Pair<OrderProduct, Timestamp>>) {
+    private fun showProducts(productToTimeStampList: List<Pair<OrderProduct, Timestamp>>) {
         boughtRecyclerAdapter = PurchaseRecyclerAdapter(this, productToTimeStampList)
         purchaseRecyclerView.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, COLUMNS_NUMBER)
         purchaseRecyclerView.adapter = boughtRecyclerAdapter
     }
 
-    override fun showProductsFetchingError(exception: Exception) {
+    private fun showProductsFetchingError(exception: Exception) {
         FancyAlertDialog.Builder(this)
             .setTitle(getString(R.string.bought_error_title))
             .setBackgroundColor(ContextCompat.getColor(this, R.color.dialogNegativeColor))
@@ -78,12 +96,16 @@ class PurchaseActivity : NucleusAppCompatActivity<PurchaseViewModel>(), Purchase
         })
     }
 
-    override fun showNoData() {
+    private fun showNoData() {
         purchaseListLayout.visibility = View.GONE
         purchaseErrorLayout.visibility = View.VISIBLE
     }
 
-    override fun setShowLoading(isLoading: Boolean) {
-        purchaseProgressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            android.R.id.home -> finish()
+        }
+
+        return false
     }
 }
