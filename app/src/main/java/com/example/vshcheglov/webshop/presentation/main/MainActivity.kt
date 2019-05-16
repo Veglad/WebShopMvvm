@@ -209,9 +209,13 @@ class MainActivity : AppCompatActivity() {
     private fun setUserAvatarImage(bitmap: Bitmap?) {
         navHeaderUserImage = navMainHeader.findViewById(R.id.navHeaderUserImage)
         if (bitmap == null) {
-            Glide.with(this).load(R.drawable.profile_avatar_placeholder_large).into(navHeaderUserImage)
+            Glide.with(this).load(R.drawable.profile_avatar_placeholder_large)
+                .apply(RequestOptions.circleCropTransform())
+                .into(navHeaderUserImage)
         } else {
-            Glide.with(this).load(bitmap).apply(RequestOptions.circleCropTransform()).into(navHeaderUserImage)
+            Glide.with(this).load(bitmap)
+                .apply(RequestOptions.circleCropTransform())
+                .into(navHeaderUserImage)
         }
     }
 
