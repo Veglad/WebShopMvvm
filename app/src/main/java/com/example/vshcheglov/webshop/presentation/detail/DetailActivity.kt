@@ -4,6 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.Product
@@ -12,16 +15,21 @@ import kotlinx.android.synthetic.main.activity_detail.*
 import nucleus5.factory.RequiresPresenter
 import nucleus5.view.NucleusAppCompatActivity
 
-@RequiresPresenter(DetailViewModel::class)
-class DetailActivity : NucleusAppCompatActivity<DetailViewModel>(), DetailViewModel.DetailView {
+
+class DetailActivity : AppCompatActivity() {
 
     companion object {
         const val PRODUCT_KEY = "product_key"
     }
 
+    private lateinit var viewModel: DetailViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
+
+        viewModel = ViewModelProviders.of(this).get(DetailViewModel::class.java)
+        initViewModelObservers()
 
         supportActionBar?.let {
             it.setDisplayHomeAsUpEnabled(true)
@@ -29,16 +37,23 @@ class DetailActivity : NucleusAppCompatActivity<DetailViewModel>(), DetailViewMo
         }
 
         detailBuyFloatActionButton.setOnClickListener {
-            presenter?.buyProduct()
+            viewModel?.buyProduct()
         }
+    }
+
+    private fun initViewModelObservers() {
+        viewModel.productInfo.observe(this, Observer { productInfo -> showProductInfo(productInfo) })
+        viewModel.startBasketScreen.observe(this, Observer { event ->
+            event.performEventIfNotHandled { startBasketActivity() }
+        })
     }
 
     override fun onResume() {
         super.onResume()
-        presenter?.showProductInfo(intent.extras?.getParcelable(DetailActivity.PRODUCT_KEY))
+        viewModel?.showProductInfo(intent.extras?.getParcelable(DetailActivity.PRODUCT_KEY))
     }
 
-    override fun showProductInfo(product: Product) {
+    private fun showProductInfo(product: Product) {
         with(product) {
             Glide.with(this@DetailActivity)
                 .load(imageThumbnailUrl)
@@ -63,7 +78,7 @@ class DetailActivity : NucleusAppCompatActivity<DetailViewModel>(), DetailViewMo
         return true
     }
 
-    override fun startBasketActivity() {
+    private fun startBasketActivity() {
         val intent = Intent(this, BasketActivity::class.java)
         startActivity(intent)
     }
