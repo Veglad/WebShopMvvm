@@ -1,36 +1,75 @@
 package com.example.vshcheglov.webshop.presentation.basket
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.example.vshcheglov.webshop.App
 import com.example.vshcheglov.webshop.domain.Basket
 import com.example.vshcheglov.webshop.domain.Product
 import com.example.vshcheglov.webshop.presentation.entites.ProductBasketCard
+import com.example.vshcheglov.webshop.presentation.entites.TotalProductPriceTitle
 import com.example.vshcheglov.webshop.presentation.entites.mappers.ProductBasketCardMapper
-import nucleus5.presenter.Presenter
+import com.example.vshcheglov.webshop.presentation.helpres.Event
+import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import javax.inject.Inject
 import kotlin.properties.Delegates
 
-class BasketViewModel : Presenter<BasketViewModel.BasketView>() {
+class BasketViewModel : ViewModel() {
 
     @Inject
     lateinit var productBasketCardMapper: ProductBasketCardMapper
     private lateinit var productToCount: Pair<Product, Int>
     private var deletedIndex by Delegates.notNull<Int>()
 
+    interface BasketView {
+        fun setTotalProductPriceTitle(position: Int, totalPrice: Double, percentageDiscount: Double)
+    }
+
+    private val _basketAmount = MutableLiveData<Double>()
+    val basketAmount: LiveData<Double> = _basketAmount
+
+    private val _basketItemNumber = MutableLiveData<String>()
+    val basketItemNumber: LiveData<String> = _basketItemNumber
+
+    private val _basket = MutableLiveData<MutableList<ProductBasketCard>>()
+    val basket: LiveData<MutableList<ProductBasketCard>> = _basket
+
+    private val _basketIsEmpty = MutableLiveData<Boolean>()
+    val basketIsEmpty: LiveData<Boolean> = _basketIsEmpty
+
+    private val _sameProductNumber = MutableLiveData<Pair<Int, Int>>()
+    val sameProductNumber: LiveData<Pair<Int, Int>> = _sameProductNumber
+
+    private val _totalProductPrice = MutableLiveData<Pair<Int, Double>>()
+    val totalProductPrice: LiveData<Pair<Int, Double>> = _totalProductPrice
+
+    private val _totalProductPriceTitle = MutableLiveData<TotalProductPriceTitle>()
+    val totalProductPriceTitle: LiveData<TotalProductPriceTitle> = _totalProductPriceTitle
+
+    private val _startOrderScreen = MutableLiveData<Event>()
+    val startOrderScreen: LiveData<Event> = _startOrderScreen
+
+    private val _removeItem = MutableLiveData<EventWithContent<Int>>()
+    val removeItem: LiveData<EventWithContent<Int>> = _removeItem
+
+    private val _restoreItem = MutableLiveData<EventWithContent<Int>>()
+    val restoreItem: LiveData<EventWithContent<Int>> = _restoreItem
+
     init {
         App.appComponent.inject(this)
     }
 
     fun makeOrder() {
-        view?.startOrderActivity()
+        _startOrderScreen.value = Event()
     }
 
     fun initProductListWithBasketInfo() {
         updateBasketInfo()
 
         val isBasketEmpty = Basket.productsNumber == 0
-        view?.setBasketIsEmptyWarning(isBasketEmpty)
+        _basketIsEmpty.value = isBasketEmpty
         if (!isBasketEmpty) {
-            view?.showBasket(productBasketCardMapper.map(Basket))
+            _basket.value = productBasketCardMapper.map(Basket)
         }
     }
 
@@ -52,25 +91,21 @@ class BasketViewModel : Presenter<BasketViewModel.BasketView>() {
 
         updateBasketInfo()
 
-        view?.let {
-            it.setSameProductsNumber(position, productCount)
-            it.setTotalProductPrice(position, Basket.getSameProductDiscountPrice(product.id))
-            if (product.percentageDiscount > 0) {
-                it.setTotalProductPriceTitle(
-                    position,
-                    Basket.getSameProductPrice(product.id),
-                    product.percentageDiscount.toDouble()
-                )
-            }
+        _sameProductNumber.value = position to productCount
+        _totalProductPrice.value = position to Basket.getSameProductDiscountPrice(product.id)
+        if (product.percentageDiscount > 0) {
+            _totalProductPriceTitle.value = TotalProductPriceTitle(
+                position,
+                Basket.getSameProductPrice(product.id),
+                product.percentageDiscount.toDouble()
+            )
         }
     }
 
 
     private fun updateBasketInfo() {
-        view?.let {
-            it.setBasketAmount(Basket.totalPriceWithDiscount)
-            it.setBasketItemsNumber(Basket.productsNumber.toString())
-        }
+        _basketAmount.value = Basket.totalPriceWithDiscount
+        _basketItemNumber.value = Basket.productsNumber.toString()
     }
 
     fun removeProductFromBasket(position: Int) {
@@ -79,42 +114,16 @@ class BasketViewModel : Presenter<BasketViewModel.BasketView>() {
 
         Basket.removeSameProducts(position)
 
-        view?.let {
-            it.removeProductCard(position)
-            it.setBasketIsEmptyWarning(Basket.productsNumber == 0)
-        }
+        _removeItem.value = EventWithContent(position)
+        _basketIsEmpty.value = Basket.productsNumber == 0
 
         updateBasketInfo()
     }
 
     fun restoreProductCard() {
         Basket.addProductToCountEntry(productToCount, deletedIndex)
-        view?.let {
-            it.setBasketIsEmptyWarning(Basket.productsNumber == 0)
-            it.restoreSameProductsCard(deletedIndex)
-        }
+        _basketIsEmpty.value = Basket.productsNumber == 0
+        _restoreItem.value = EventWithContent(deletedIndex)
         updateBasketInfo()
-    }
-
-    interface BasketView {
-        fun startOrderActivity()
-
-        fun setBasketAmount(amount: Double)
-
-        fun setBasketItemsNumber(itemsNumber: String)
-
-        fun showBasket(productBaseketCardList: MutableList<ProductBasketCard>)
-
-        fun setBasketIsEmptyWarning(isEmpty: Boolean)
-
-        fun removeProductCard(position: Int)
-
-        fun restoreSameProductsCard(deletedIndex: Int)
-
-        fun setSameProductsNumber(position: Int, number: Int)
-
-        fun setTotalProductPrice(position: Int, totalDiscountPrice: Double)
-
-        fun setTotalProductPriceTitle(position: Int, totalPrice: Double, percentageDiscount: Double)
     }
 }

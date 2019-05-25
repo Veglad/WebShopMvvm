@@ -6,10 +6,14 @@ import com.google.android.material.snackbar.Snackbar
 import androidx.recyclerview.widget.ItemTouchHelper
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.presentation.basket.adapter.BasketRecyclerAdapter
 import com.example.vshcheglov.webshop.presentation.basket.adapter.BasketRecyclerItemTouchHelper
 import com.example.vshcheglov.webshop.presentation.entites.ProductBasketCard
+import com.example.vshcheglov.webshop.presentation.entites.TotalProductPriceTitle
 import com.example.vshcheglov.webshop.presentation.main.MainActivity
 import com.example.vshcheglov.webshop.presentation.order.OrderActivity
 import kotlinx.android.synthetic.main.activity_basket.*
@@ -18,19 +22,48 @@ import kotlinx.android.synthetic.main.message_with_action_layout.*
 import nucleus5.factory.RequiresPresenter
 import nucleus5.view.NucleusAppCompatActivity
 
-@RequiresPresenter(BasketViewModel::class)
-class BasketActivity : NucleusAppCompatActivity<BasketViewModel>(), BasketViewModel.BasketView,
-    BasketRecyclerItemTouchHelper.BasketRecyclerItemTouchHelperListener {
+class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.BasketRecyclerItemTouchHelperListener {
 
     private lateinit var basketAdapter: BasketRecyclerAdapter
+    private lateinit var viewModel: BasketViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_basket)
 
+        viewModel = ViewModelProviders.of(this).get(BasketViewModel::class.java)
+        initViewModelObservers()
+
         initActionBar()
         initEmptyBasketLayout()
-        basketMakeOrderButton.setOnClickListener { presenter?.makeOrder() }
+        basketMakeOrderButton.setOnClickListener { viewModel?.makeOrder() }
+    }
+
+    private fun initViewModelObservers() {
+        viewModel.basketAmount.observe(this, Observer { basketAmount -> setBasketAmount(basketAmount) })
+        viewModel.basketItemNumber.observe(
+            this,
+            Observer { basketItemNumber -> basketItemsTextView.text = basketItemNumber })
+        viewModel.basket.observe(this, Observer { basket -> showBasket(basket) })
+        viewModel.basketIsEmpty.observe(this, Observer { isEmpty -> setBasketIsEmptyWarning(isEmpty) })
+        viewModel.sameProductNumber.observe(this, Observer { sameProductNumber ->
+            setSameProductsNumber(sameProductNumber.first, sameProductNumber.second)
+        })
+        viewModel.totalProductPrice.observe(this, Observer { totalProductPrice ->
+            setTotalProductPrice(totalProductPrice.first, totalProductPrice.second)
+        })
+        viewModel.totalProductPriceTitle.observe(this, Observer { totalProductPriceTitle ->
+            setTotalProductPriceTitle(totalProductPriceTitle)
+        })
+        viewModel.startOrderScreen.observe(this, Observer { startOrderScreenEvent ->
+            startOrderScreenEvent.performEventIfNotHandled { startOrderActivity() }
+        })
+        viewModel.removeItem.observe(this, Observer { removeItem ->
+            removeItem.getContentIfNotHandled()?.let { position -> removeProductCard(position) }
+        })
+        viewModel.restoreItem.observe(this, Observer { restoreItem ->
+            restoreItem.getContentIfNotHandled()?.let { position -> restoreSameProductsCard(position) }
+        })
     }
 
     private fun initEmptyBasketLayout() {
@@ -44,12 +77,12 @@ class BasketActivity : NucleusAppCompatActivity<BasketViewModel>(), BasketViewMo
         }
     }
 
-    override fun showBasket(productBaseketCardList: MutableList<ProductBasketCard>) {
+    private fun showBasket(productBaseketCardList: MutableList<ProductBasketCard>) {
         with(basketRecyclerView) {
             layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this@BasketActivity)
             basketAdapter = BasketRecyclerAdapter(productBaseketCardList).also {
-                it.onProductNumberIncreasedListener = { position -> presenter?.productNumberIncreased(position) }
-                it.onProductNumberDecreasedListener = { position -> presenter?.productNumberDecreased(position) }
+                it.onProductNumberIncreasedListener = { position -> viewModel?.productNumberIncreased(position) }
+                it.onProductNumberDecreasedListener = { position -> viewModel?.productNumberDecreased(position) }
             }
             adapter = basketAdapter
             itemAnimator = androidx.recyclerview.widget.DefaultItemAnimator()
@@ -76,7 +109,7 @@ class BasketActivity : NucleusAppCompatActivity<BasketViewModel>(), BasketViewMo
         position: Int
     ) {
         val holder = viewHolder as? BasketRecyclerAdapter.ViewHolder
-        holder?.let { presenter?.removeProductFromBasket(position) }
+        holder?.let { viewModel?.removeProductFromBasket(position) }
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
@@ -86,21 +119,17 @@ class BasketActivity : NucleusAppCompatActivity<BasketViewModel>(), BasketViewMo
         return true
     }
 
-    override fun startOrderActivity() {
+    private fun startOrderActivity() {
         val intent = Intent(this, OrderActivity::class.java)
         startActivity(intent)
     }
 
-    override fun setBasketAmount(amount: Double) {
+    private fun setBasketAmount(amount: Double) {
         val amountTitle = String.format(getString(R.string.price_format), amount)
         basketAmountTextView.text = amountTitle
     }
 
-    override fun setBasketItemsNumber(itemsNumber: String) {
-        basketItemsTextView.text = itemsNumber
-    }
-
-    override fun setBasketIsEmptyWarning(isEmpty: Boolean) {
+    private fun setBasketIsEmptyWarning(isEmpty: Boolean) {
         if (isEmpty) {
             basketListLayout.visibility = View.INVISIBLE
             basketMakeOrderButton.visibility = View.INVISIBLE
@@ -113,35 +142,40 @@ class BasketActivity : NucleusAppCompatActivity<BasketViewModel>(), BasketViewMo
         basketMakeOrderButton.isEnabled = !isEmpty
     }
 
-    override fun removeProductCard(position: Int) {
+    private fun removeProductCard(position: Int) {
         basketAdapter.removeItem(position)
         val undoTitle = getString(R.string.removed_item_snackbar)
         val snackBar = Snackbar.make(basketCoordinatorLayout, undoTitle, Snackbar.LENGTH_SHORT)
-        snackBar.setAction(getString(R.string.undo_uppercase)) { presenter?.restoreProductCard() }
+        snackBar.setAction(getString(R.string.undo_uppercase)) { viewModel?.restoreProductCard() }
         snackBar.show()
     }
 
-    override fun restoreSameProductsCard(deletedIndex: Int) {
+    private fun restoreSameProductsCard(deletedIndex: Int) {
         basketAdapter.restoreItem(deletedIndex)
     }
 
-    override fun setSameProductsNumber(position: Int, number: Int) {
+    private fun setSameProductsNumber(position: Int, number: Int) {
         val view = basketRecyclerView.layoutManager?.findViewByPosition(position)
         view?.let { basketAdapter.setProductsNumberByPosition(it, number, position) }
     }
 
-    override fun setTotalProductPrice(position: Int, totalDiscountPrice: Double) {
+    private fun setTotalProductPrice(position: Int, totalDiscountPrice: Double) {
         val view = basketRecyclerView.layoutManager?.findViewByPosition(position)
         view?.let { basketAdapter.updateCardTotalPrice(position, totalDiscountPrice, view) }
     }
 
-    override fun setTotalProductPriceTitle(position: Int, totalPrice: Double, percentageDiscount: Double) {
-        val view = basketRecyclerView.layoutManager?.findViewByPosition(position)
-        view?.let { basketAdapter.updateCardTotalPriceTitle(position, totalPrice, view, percentageDiscount) }
+    private fun setTotalProductPriceTitle(totalProductPriceTitle: TotalProductPriceTitle) {
+        val view = basketRecyclerView.layoutManager?.findViewByPosition(totalProductPriceTitle.position)
+        view?.let {
+            basketAdapter.updateCardTotalPriceTitle(
+                totalProductPriceTitle.position,
+                totalProductPriceTitle.totalPrice, view, totalProductPriceTitle.percentageDiscount
+            )
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        presenter?.initProductListWithBasketInfo()
+        viewModel?.initProductListWithBasketInfo()
     }
 }
