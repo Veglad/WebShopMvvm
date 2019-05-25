@@ -6,6 +6,9 @@ import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.core.content.ContextCompat
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.extensions.isNetworkAvailable
 import com.example.vshcheglov.webshop.presentation.entites.OrderCard
@@ -14,16 +17,17 @@ import com.shashank.sony.fancydialoglib.Animation
 import com.shashank.sony.fancydialoglib.FancyAlertDialog
 import com.shashank.sony.fancydialoglib.Icon
 import kotlinx.android.synthetic.main.activity_order.*
-import nucleus5.factory.RequiresPresenter
-import nucleus5.view.NucleusAppCompatActivity
 
+class OrderActivity : AppCompatActivity() {
 
-@RequiresPresenter(OrderViewModel::class)
-class OrderActivity : NucleusAppCompatActivity<OrderViewModel>(), OrderViewModel.OrderView {
+    private lateinit var viewModel: OrderViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_order)
+
+        viewModel = ViewModelProviders.of(this).get(OrderViewModel::class.java)
+        initViewModelObservers()
 
         orderButton.setOnClickListener {
             val name = orderName.text.toString()
@@ -35,10 +39,59 @@ class OrderActivity : NucleusAppCompatActivity<OrderViewModel>(), OrderViewModel
             val orderCard = OrderCard(name, lastName, cardNumber, cardMonth, cardYear, cardCvv)
 
             clearErrors()
-            presenter.makeOrder(orderCard, isNetworkAvailable())
+            viewModel.makeOrder(orderCard, isNetworkAvailable())
         }
 
         initActionBar()
+    }
+
+    private fun initViewModelObservers() {
+        viewModel.orderPrice.observe(this, Observer { price ->
+            orderTotalPrice.text = String.format(getString(R.string.price_format), price)
+        })
+
+        viewModel.isLoading.observe(this, Observer { isLoading ->
+            setShowProgress(isLoading)
+        })
+        viewModel.invalidName.observe(this, Observer { event ->
+            event.performEventIfNotHandled {
+                nameTextInput.error = resources.getString(R.string.order_invalid_name)
+            }
+        })
+        viewModel.invalidSecondName.observe(this, Observer { event ->
+            event.performEventIfNotHandled {
+                lastNameTextInput.error = resources.getString(R.string.order_invalid_last_name)
+            }
+        })
+        viewModel.invalidCardNumber.observe(this, Observer { event ->
+            event.performEventIfNotHandled {
+                cardNumberTextInput.error = resources.getString(R.string.order_invalid_card_number)
+            }
+        })
+        viewModel.invalidCardMonth.observe(this, Observer { event ->
+            event.performEventIfNotHandled {
+                cardMonthTextInput.error = resources.getString(R.string.order_invalid_card_month)
+            }
+        })
+        viewModel.invalidCardYear.observe(this, Observer { event ->
+            event.performEventIfNotHandled {
+                cardYearTextInput.error = resources.getString(R.string.order_invalid_card_year)
+            }
+        })
+        viewModel.invalidCardCvv.observe(this, Observer { event ->
+            event.performEventIfNotHandled {
+                cardCvvTextInput.error = resources.getString(R.string.order_invalid_cv)
+            }
+        })
+        viewModel.noInternet.observe(this, Observer { event ->
+            event.performEventIfNotHandled { showNoInternetError() }
+        })
+        viewModel.orderSaveError.observe(this, Observer { event ->
+            event.performEventIfNotHandled { showOrderSaveError() }
+        })
+        viewModel.orderCompleted.observe(this, Observer { event ->
+            event.performEventIfNotHandled { notifyOrderCompleted() }
+        })
     }
 
     private fun clearErrors() {
@@ -52,7 +105,7 @@ class OrderActivity : NucleusAppCompatActivity<OrderViewModel>(), OrderViewModel
 
     override fun onResume() {
         super.onResume()
-        presenter?.initOrderPrice()
+        viewModel?.initOrderPrice()
     }
 
     private fun initActionBar() {
@@ -76,11 +129,7 @@ class OrderActivity : NucleusAppCompatActivity<OrderViewModel>(), OrderViewModel
         return false
     }
 
-    override fun setOrderPrice(orderPrice: Double) {
-        orderTotalPrice.text = String.format(getString(R.string.price_format), orderPrice)
-    }
-
-    override fun setShowProgress(isVisible: Boolean) {
+    private fun setShowProgress(isVisible: Boolean) {
         if (isVisible) {
             orderButton.startAnimation()
         } else {
@@ -88,31 +137,7 @@ class OrderActivity : NucleusAppCompatActivity<OrderViewModel>(), OrderViewModel
         }
     }
 
-    override fun showInvalidName() {
-        nameTextInput.error = resources.getString(R.string.order_invalid_name)
-    }
-
-    override fun showInvalidSecondName() {
-        lastNameTextInput.error = resources.getString(R.string.order_invalid_last_name)
-    }
-
-    override fun showInvalidCardNumber() {
-        cardNumberTextInput.error = resources.getString(R.string.order_invalid_card_number)
-    }
-
-    override fun showInvalidCardMonth() {
-        cardMonthTextInput.error = resources.getString(R.string.order_invalid_card_month)
-    }
-
-    override fun showInvalidCardYear() {
-        cardYearTextInput.error = resources.getString(R.string.order_invalid_card_year)
-    }
-
-    override fun showInvalidCardCvv() {
-        cardCvvTextInput.error = resources.getString(R.string.order_invalid_cv)
-    }
-
-    override fun showNoInternetError() {
+    private fun showNoInternetError() {
         Snackbar.make(
             orderLinearLayout,
             resources.getString(R.string.no_internet_connection_warning),
@@ -120,7 +145,7 @@ class OrderActivity : NucleusAppCompatActivity<OrderViewModel>(), OrderViewModel
         ).show()
     }
 
-    override fun notifyOrderCompleted() {
+    private fun notifyOrderCompleted() {
         FancyAlertDialog.Builder(this)
             .setTitle(getString(R.string.order_completed_title))
             .setBackgroundColor(ContextCompat.getColor(this, R.color.dialogPositiveColor))
@@ -137,7 +162,7 @@ class OrderActivity : NucleusAppCompatActivity<OrderViewModel>(), OrderViewModel
             .build()
     }
 
-    override fun showOrderSaveError() {
+    private fun showOrderSaveError() {
         FancyAlertDialog.Builder(this)
             .setTitle(getString(R.string.order_error_title))
             .setBackgroundColor(ContextCompat.getColor(this, R.color.dialogNegativeColor))
