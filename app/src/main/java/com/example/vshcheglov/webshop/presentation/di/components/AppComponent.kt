@@ -10,7 +10,7 @@ import com.example.vshcheglov.webshop.data.products.ProductStorage
 import com.example.vshcheglov.webshop.data.users.UserRepository
 import com.example.vshcheglov.webshop.data.users.UserNetworkDataSource
 import com.example.vshcheglov.webshop.data.users.UserStorage
-import com.example.vshcheglov.webshop.presentation.basket.BasketPresenter
+import com.example.vshcheglov.webshop.presentation.basket.BasketViewModel
 import com.example.vshcheglov.webshop.presentation.purchase.PurchaseViewModel
 import com.example.vshcheglov.webshop.presentation.di.modules.*
 import com.example.vshcheglov.webshop.presentation.login.LoginViewModel
@@ -31,7 +31,7 @@ import javax.inject.Singleton
 )
 interface AppComponent {
     fun inject(mainPresenter: MainViewModel)
-    fun inject(basketPresenter: BasketPresenter)
+    fun inject(basketPresenter: BasketViewModel)
     fun inject(networkDataSource: ProductNetworkDataSource)
     fun inject(productRepository: ProductRepository)
     fun inject(loginPresenter: LoginViewModel)

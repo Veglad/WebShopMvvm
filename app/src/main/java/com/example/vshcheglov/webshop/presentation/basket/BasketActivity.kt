@@ -18,8 +18,8 @@ import kotlinx.android.synthetic.main.message_with_action_layout.*
 import nucleus5.factory.RequiresPresenter
 import nucleus5.view.NucleusAppCompatActivity
 
-@RequiresPresenter(BasketPresenter::class)
-class BasketActivity : NucleusAppCompatActivity<BasketPresenter>(), BasketPresenter.BasketView,
+@RequiresPresenter(BasketViewModel::class)
+class BasketActivity : NucleusAppCompatActivity<BasketViewModel>(), BasketViewModel.BasketView,
     BasketRecyclerItemTouchHelper.BasketRecyclerItemTouchHelperListener {
 
     private lateinit var basketAdapter: BasketRecyclerAdapter

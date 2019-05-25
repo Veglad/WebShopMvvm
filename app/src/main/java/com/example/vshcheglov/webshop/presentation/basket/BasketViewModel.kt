@@ -9,7 +9,7 @@ import nucleus5.presenter.Presenter
 import javax.inject.Inject
 import kotlin.properties.Delegates
 
-class BasketPresenter : Presenter<BasketPresenter.BasketView>() {
+class BasketViewModel : Presenter<BasketViewModel.BasketView>() {
 
     @Inject
     lateinit var productBasketCardMapper: ProductBasketCardMapper
