@@ -13,7 +13,7 @@ import java.lang.Exception
 import java.util.*
 import javax.inject.Inject
 
-class OrderPresenter : Presenter<OrderPresenter.OrderView>() {
+class OrderViewModel : Presenter<OrderViewModel.OrderView>() {
 
     companion object {
         const val MIN_NAME_LENGTH = 2

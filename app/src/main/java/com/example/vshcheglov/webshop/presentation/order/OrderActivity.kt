@@ -3,7 +3,6 @@ package com.example.vshcheglov.webshop.presentation.order
 import android.content.Intent
 import android.graphics.PorterDuff
 import android.os.Bundle
-import android.view.KeyEvent
 import com.google.android.material.snackbar.Snackbar
 import androidx.core.content.ContextCompat
 import android.view.MenuItem
@@ -19,8 +18,8 @@ import nucleus5.factory.RequiresPresenter
 import nucleus5.view.NucleusAppCompatActivity
 
 
-@RequiresPresenter(OrderPresenter::class)
-class OrderActivity : NucleusAppCompatActivity<OrderPresenter>(), OrderPresenter.OrderView {
+@RequiresPresenter(OrderViewModel::class)
+class OrderActivity : NucleusAppCompatActivity<OrderViewModel>(), OrderViewModel.OrderView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
