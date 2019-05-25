@@ -4,7 +4,7 @@ import com.example.vshcheglov.webshop.domain.Basket
 import com.example.vshcheglov.webshop.domain.Product
 import nucleus5.presenter.Presenter
 
-class DetailPresenter : Presenter<DetailPresenter.DetailView>() {
+class DetailViewModel : Presenter<DetailViewModel.DetailView>() {
 
     private lateinit var product: Product
 

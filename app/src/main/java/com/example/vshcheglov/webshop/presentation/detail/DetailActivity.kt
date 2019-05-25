@@ -1,7 +1,6 @@
 package com.example.vshcheglov.webshop.presentation.detail
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -13,8 +12,8 @@ import kotlinx.android.synthetic.main.activity_detail.*
 import nucleus5.factory.RequiresPresenter
 import nucleus5.view.NucleusAppCompatActivity
 
-@RequiresPresenter(DetailPresenter::class)
-class DetailActivity : NucleusAppCompatActivity<DetailPresenter>(), DetailPresenter.DetailView {
+@RequiresPresenter(DetailViewModel::class)
+class DetailActivity : NucleusAppCompatActivity<DetailViewModel>(), DetailViewModel.DetailView {
 
     companion object {
         const val PRODUCT_KEY = "product_key"
