@@ -26,41 +26,32 @@ class MainViewModel : ViewModel() {
     private val job: Job = Job()
     private val uiCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + job)
 
-    private val _searchProductList = MutableLiveData<List<Product>>().apply { value = listOf() }
-    val searchProductList: LiveData<List<Product>>
-        get() = _searchProductList
+    private val _liveDataSearchProductList = MutableLiveData<List<Product>>().apply { value = listOf() }
+    val liveDataSearchProductList: LiveData<List<Product>> = _liveDataSearchProductList
 
-    private val _productList = MutableLiveData<MutableList<Product>>().apply { value = mutableListOf() }
-    val productList: LiveData<MutableList<Product>>
-        get() = _productList
+    private val _liveDataProductList = MutableLiveData<MutableList<Product>>().apply { value = mutableListOf() }
+    val liveDataProductList: LiveData<MutableList<Product>> = _liveDataProductList
 
-    private val _promotionalProductList = MutableLiveData<MutableList<Product>>().apply { value = mutableListOf() }
-    val promotionalProductList: LiveData<MutableList<Product>>
-        get() = _promotionalProductList
+    private val _liveDataPromotionalProductList = MutableLiveData<MutableList<Product>>().apply { value = mutableListOf() }
+    val liveDataPromotionalProductList: LiveData<MutableList<Product>> = _liveDataPromotionalProductList
 
-    private val _isLoading = MutableLiveData<Boolean>().apply { value = false }
-    val isLoading: LiveData<Boolean>
-        get() = _isLoading
+    private val _liveDataIsLoading = MutableLiveData<Boolean>().apply { value = false }
+    val liveDataIsLoading: LiveData<Boolean> = _liveDataIsLoading
 
-    private val _avatarImage = MutableLiveData<Bitmap?>().apply { value = null }
-    val avatarImage: LiveData<Bitmap?>
-        get() = _avatarImage
+    private val _liveDataAvatarImage = MutableLiveData<Bitmap?>().apply { value = null }
+    val liveDataAvatarImage: LiveData<Bitmap?> = _liveDataAvatarImage
 
-    private val _userEmail = MutableLiveData<String?>().apply { value = null }
-    val userEmail: LiveData<String?>
-        get() = _userEmail
+    private val _liveDataUserEmail = MutableLiveData<String?>().apply { value = null }
+    val liveDataUserEmail: LiveData<String?> = _liveDataUserEmail
 
-    private val _showError = MutableLiveData<EventWithContent<Exception>>()
-    val showError: LiveData<EventWithContent<Exception>>
-        get() = _showError
+    private val _liveDataShowError = MutableLiveData<EventWithContent<Exception>>()
+    val liveDataShowError: LiveData<EventWithContent<Exception>> = _liveDataShowError
 
-    private val _showNoInternetWarning = MutableLiveData<Event>()
-    val showNoInternetWarning: LiveData<Event>
-        get() = _showNoInternetWarning
+    private val _liveDataShowNoInternetWarning = MutableLiveData<Event>()
+    val liveDataShowNoInternetWarning: LiveData<Event> = _liveDataShowNoInternetWarning
 
-    private val _startLoginActivity = MutableLiveData<Event>()
-    val startLoginActivity: LiveData<Event>
-        get() = _startLoginActivity
+    private val _liveDataStartLoginActivity = MutableLiveData<Event>()
+    val liveDataStartLoginActivity: LiveData<Event> = _liveDataStartLoginActivity
 
     init {
         App.appComponent.inject(this)
@@ -70,12 +61,12 @@ class MainViewModel : ViewModel() {
             loadUserEmail()
             loadUserAvatar()
         } catch (e: Exception) {
-            _showNoInternetWarning.value = Event()
-            _isLoading.value = false
+            _liveDataShowNoInternetWarning.value = Event()
+            _liveDataIsLoading.value = false
         }
 
         if (isNeedToSaveAvatar) {
-            _avatarImage.value?.let { bitmap ->
+            _liveDataAvatarImage.value?.let { bitmap ->
                 uiCoroutineScope.launch {
                     withContext(Dispatchers.IO) {
                         dataProvider.saveUserProfilePhoto(bitmap, "JPEG_" + UUID.randomUUID())
@@ -87,7 +78,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun loadProducts(isNetworkAvailable: Boolean) {
-        if (_productList.value?.isEmpty() != false && _productList.value?.isEmpty() != false) {
+        if (_liveDataProductList.value?.isEmpty() != false && _liveDataProductList.value?.isEmpty() != false) {
             forceLoadProducts(isNetworkAvailable)
         }
     }
@@ -96,54 +87,54 @@ class MainViewModel : ViewModel() {
         if (isNetworkAvailable) {
             fetchProducts()
         } else {
-            _showNoInternetWarning.value = Event()
-            _isLoading.value = false
+            _liveDataShowNoInternetWarning.value = Event()
+            _liveDataIsLoading.value = false
         }
     }
 
     private fun fetchProducts() {
         uiCoroutineScope.launch {
             try {
-                _isLoading.value = true
+                _liveDataIsLoading.value = true
 
                 val productsDeferred = uiCoroutineScope.async { dataProvider.getProducts() }
                 val promotionalProductsDeferred = uiCoroutineScope.async { dataProvider.getPromotionalProducts() }
-                _productList.value = productsDeferred.await()
-                _promotionalProductList.value = promotionalProductsDeferred.await()
+                _liveDataProductList.value = productsDeferred.await()
+                _liveDataPromotionalProductList.value = promotionalProductsDeferred.await()
 
             } catch (ex: Exception) {
                 Timber.e("Products fetching error:$ex")
-                _showError.value = EventWithContent(ex)
+                _liveDataShowError.value = EventWithContent(ex)
             } finally {
-                _isLoading.value = false
+                _liveDataIsLoading.value = false
             }
         }
     }
 
     private fun loadUserEmail() {
-        if (_userEmail.value == null) {
+        if (_liveDataUserEmail.value == null) {
             uiCoroutineScope.launch {
                 try {
                     val user = withContext(Dispatchers.IO) { dataProvider.getCurrentUser() }
-                    _userEmail.value = user.email
+                    _liveDataUserEmail.value = user.email
                 } catch (ex: Exception) {
-                    _userEmail.value = null
+                    _liveDataUserEmail.value = null
                 }
             }
         }
     }
 
     private fun loadUserAvatar() {
-        if (_avatarImage.value == null) {
+        if (_liveDataAvatarImage.value == null) {
             uiCoroutineScope.launch {
                 try {
                     val avatarByteArray = withContext(Dispatchers.IO) { dataProvider.getUserAvatarByteArray() }
                     val avatarBitmap = withContext(Dispatchers.Default) {
                         BitmapFactory.decodeByteArray(avatarByteArray, 0, avatarByteArray.size)
                     }
-                    _avatarImage.value = avatarBitmap
+                    _liveDataAvatarImage.value = avatarBitmap
                 } catch (ex: Exception) {
-                    _avatarImage.value = null
+                    _liveDataAvatarImage.value = null
                 }
             }
         }
@@ -151,18 +142,18 @@ class MainViewModel : ViewModel() {
 
     fun logOut() {
         dataProvider.logOut()
-        _startLoginActivity.value = Event()
+        _liveDataStartLoginActivity.value = Event()
     }
 
     fun searchProducts(searchText: String) {
-        _isLoading.value = true
-        _productList.value?.let {
+        _liveDataIsLoading.value = true
+        _liveDataProductList.value?.let {
             val searchFilter = SearchFilter(it) { productList: List<Product>? ->
-                _isLoading.value = false
+                _liveDataIsLoading.value = false
                 if (productList == null || productList.isEmpty()) {
-                    _searchProductList.value = listOf()
+                    _liveDataSearchProductList.value = listOf()
                 } else {
-                    _searchProductList.value = productList
+                    _liveDataSearchProductList.value = productList
                 }
             }
             searchFilter.filter.filter(searchText)
@@ -171,7 +162,7 @@ class MainViewModel : ViewModel() {
 
     //This Method called from OnActivityResult (before onResume) => view == null
     fun updateUserProfilePhoto(profilePhotoBitmap: Bitmap) {
-        _avatarImage.value = profilePhotoBitmap
+        _liveDataAvatarImage.value = profilePhotoBitmap
         isNeedToSaveAvatar = true
     }
 

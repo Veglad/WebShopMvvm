@@ -19,8 +19,6 @@ import com.example.vshcheglov.webshop.presentation.order.OrderActivity
 import kotlinx.android.synthetic.main.activity_basket.*
 import kotlinx.android.synthetic.main.activity_basket_list_layout.*
 import kotlinx.android.synthetic.main.message_with_action_layout.*
-import nucleus5.factory.RequiresPresenter
-import nucleus5.view.NucleusAppCompatActivity
 
 class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.BasketRecyclerItemTouchHelperListener {
 
@@ -40,28 +38,28 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
     }
 
     private fun initViewModelObservers() {
-        viewModel.basketAmount.observe(this, Observer { basketAmount -> setBasketAmount(basketAmount) })
-        viewModel.basketItemNumber.observe(
+        viewModel.liveDataBasketAmount.observe(this, Observer { basketAmount -> setBasketAmount(basketAmount) })
+        viewModel.liveDataBasketItemNumber.observe(
             this,
             Observer { basketItemNumber -> basketItemsTextView.text = basketItemNumber })
-        viewModel.basket.observe(this, Observer { basket -> showBasket(basket) })
-        viewModel.basketIsEmpty.observe(this, Observer { isEmpty -> setBasketIsEmptyWarning(isEmpty) })
-        viewModel.sameProductNumber.observe(this, Observer { sameProductNumber ->
+        viewModel.liveDataBasket.observe(this, Observer { basket -> showBasket(basket) })
+        viewModel.liveDataBasketIsEmpty.observe(this, Observer { isEmpty -> setBasketIsEmptyWarning(isEmpty) })
+        viewModel.liveDataSameProductNumber.observe(this, Observer { sameProductNumber ->
             setSameProductsNumber(sameProductNumber.first, sameProductNumber.second)
         })
-        viewModel.totalProductPrice.observe(this, Observer { totalProductPrice ->
+        viewModel.liveDataTotalProductPrice.observe(this, Observer { totalProductPrice ->
             setTotalProductPrice(totalProductPrice.first, totalProductPrice.second)
         })
-        viewModel.totalProductPriceTitle.observe(this, Observer { totalProductPriceTitle ->
+        viewModel.liveDataTotalProductPriceTitle.observe(this, Observer { totalProductPriceTitle ->
             setTotalProductPriceTitle(totalProductPriceTitle)
         })
-        viewModel.startOrderScreen.observe(this, Observer { startOrderScreenEvent ->
+        viewModel.liveDataStartOrderScreen.observe(this, Observer { startOrderScreenEvent ->
             startOrderScreenEvent.performEventIfNotHandled { startOrderActivity() }
         })
-        viewModel.removeItem.observe(this, Observer { removeItem ->
+        viewModel.liveDataRemoveItem.observe(this, Observer { removeItem ->
             removeItem.getContentIfNotHandled()?.let { position -> removeProductCard(position) }
         })
-        viewModel.restoreItem.observe(this, Observer { restoreItem ->
+        viewModel.liveDataRestoreItem.observe(this, Observer { restoreItem ->
             restoreItem.getContentIfNotHandled()?.let { position -> restoreSameProductsCard(position) }
         })
     }

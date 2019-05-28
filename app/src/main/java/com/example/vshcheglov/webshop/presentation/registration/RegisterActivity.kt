@@ -64,41 +64,41 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun initViewModelObservers() {
-        viewModel.showEmailInvalid.observe(this,
+        viewModel.liveDataShowEmailInvalid.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled { registerEmailTextInput.error = getString(R.string.email_error) }
             })
-        viewModel.showPasswordsNotMatch.observe(this,
+        viewModel.liveDataShowPasswordsNotMatch.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled {
                     registerConfirmPasswordTextInput.error = getString(R.string.passwords_not_match)
                 }
             })
-        viewModel.showPasswordIsInvalid.observe(this,
+        viewModel.liveDataShowPasswordIsInvalid.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled {
                     registerPasswordTextInput.error = resources.getString(R.string.password_error)
                 }
             })
-        viewModel.showConfirmPasswordIsInvalid.observe(this,
+        viewModel.showConfirmPasswordInvalid.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled {
                     registerConfirmPasswordTextInput.error = resources.getString(R.string.password_error)
                 }
             })
-        viewModel.showNoInternet.observe(this,
+        viewModel.liveDataShowNoInternet.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled { showNoInternetError() }
             })
-        viewModel.startMainScreen.observe(this,
+        viewModel.liveDataStartMainScreen.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled { startMainActivity() }
             })
-        viewModel.isLoading.observe(this,
+        viewModel.liveDataIsLoading.observe(this,
             Observer<Boolean> { isLoading ->
                 setShowProgress(isLoading)
             })
-        viewModel.registrationError.observe(this,
+        viewModel.liveDataRegistrationError.observe(this,
             Observer<Exception> { exception ->
                 showLoginError(exception)
             })

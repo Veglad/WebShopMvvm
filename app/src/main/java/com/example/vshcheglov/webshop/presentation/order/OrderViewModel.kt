@@ -25,38 +25,38 @@ class OrderViewModel : ViewModel() {
         const val MAX_CARD_YEAR_NUMBER = 30
     }
 
-    private val _orderPrice = MutableLiveData<Double>()
-    val orderPrice: LiveData<Double> = _orderPrice
+    private val _liveDataOrderPrice = MutableLiveData<Double>()
+    val liveDataOrderPrice: LiveData<Double> = _liveDataOrderPrice
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
+    private val _liveDataIsLoading = MutableLiveData<Boolean>()
+    val liveDataIsLoading: LiveData<Boolean> = _liveDataIsLoading
 
-    private val _invalidName = MutableLiveData<Event>()
-    val invalidName: LiveData<Event> = _invalidName
+    private val _liveDataInvalidName = MutableLiveData<Event>()
+    val liveDataInvalidName: LiveData<Event> = _liveDataInvalidName
 
-    private val _invalidSecondName = MutableLiveData<Event>()
-    val invalidSecondName: LiveData<Event> = _invalidSecondName
+    private val _liveDataInvalidSecondName = MutableLiveData<Event>()
+    val liveDataInvalidSecondName: LiveData<Event> = _liveDataInvalidSecondName
 
-    private val _invalidCardNumber = MutableLiveData<Event>()
-    val invalidCardNumber: LiveData<Event> = _invalidCardNumber
+    private val _liveDataInvalidCardNumber = MutableLiveData<Event>()
+    val liveDataInvalidCardNumber: LiveData<Event> = _liveDataInvalidCardNumber
 
-    private val _invalidCardMonth = MutableLiveData<Event>()
-    val invalidCardMonth: LiveData<Event> = _invalidCardMonth
+    private val _liveDataInvalidCardMonth = MutableLiveData<Event>()
+    val liveDataInvalidCardMonth: LiveData<Event> = _liveDataInvalidCardMonth
 
-    private val _invalidCardYear = MutableLiveData<Event>()
-    val invalidCardYear: LiveData<Event> = _invalidCardYear
+    private val _liveDataInvalidCardYear = MutableLiveData<Event>()
+    val liveDataInvalidCardYear: LiveData<Event> = _liveDataInvalidCardYear
 
-    private val _invalidCardCvv = MutableLiveData<Event>()
-    val invalidCardCvv: LiveData<Event> = _invalidCardCvv
+    private val _liveDataInvalidCardCvv = MutableLiveData<Event>()
+    val liveDataInvalidCardCvv: LiveData<Event> = _liveDataInvalidCardCvv
 
-    private val _noInternet = MutableLiveData<Event>()
-    val noInternet: LiveData<Event> = _noInternet
+    private val _liveDataNoInternet = MutableLiveData<Event>()
+    val liveDataNoInternet: LiveData<Event> = _liveDataNoInternet
 
-    private val _orderSaveError = MutableLiveData<Event>()
-    val orderSaveError: LiveData<Event> = _orderSaveError
+    private val _liveDataOrderSaveError = MutableLiveData<Event>()
+    val liveDataOrderSaveError: LiveData<Event> = _liveDataOrderSaveError
 
-    private val _orderCompleted = MutableLiveData<Event>()
-    val orderCompleted: LiveData<Event> = _orderCompleted
+    private val _liveDataOrderCompleted = MutableLiveData<Event>()
+    val liveDataOrderCompleted: LiveData<Event> = _liveDataOrderCompleted
 
     @Inject
     lateinit var dataProvider: DataProvider
@@ -71,12 +71,12 @@ class OrderViewModel : ViewModel() {
     }
 
     fun initOrderPrice() {
-        _orderPrice.value = Basket.totalPriceWithDiscount
+        _liveDataOrderPrice.value = Basket.totalPriceWithDiscount
     }
 
     fun makeOrder(card: OrderCard, isNetworkAvailable: Boolean) {
         uiCoroutineScope.launch {
-            _isLoading.value = true
+            _liveDataIsLoading.value = true
             val isValid = validateOrderCard(card)
 
             if (isNetworkAvailable) {
@@ -84,9 +84,9 @@ class OrderViewModel : ViewModel() {
                     saveOrder()
                 }
             } else {
-                _noInternet.value = Event()
+                _liveDataNoInternet.value = Event()
             }
-            _isLoading.value = false
+            _liveDataIsLoading.value = false
         }
     }
 
@@ -94,32 +94,32 @@ class OrderViewModel : ViewModel() {
         var isValid = true
         if (card.name.length < MIN_NAME_LENGTH) {
             isValid = false
-            _invalidName.value = Event()
+            _liveDataInvalidName.value = Event()
         }
         if (card.lastName.length < MIN_NAME_LENGTH) {
             isValid = false
-            _invalidSecondName.value = Event()
+            _liveDataInvalidSecondName.value = Event()
         }
         card.cardNumber = card.cardNumber.replace(" ", "")
         if (!card.cardNumber.isCardNumberValid()) {
             isValid = false
-            _invalidCardNumber.value = Event()
+            _liveDataInvalidCardNumber.value = Event()
         }
         val cardMonth = card.cardMonth
         if (cardMonth == null || cardMonth !in MIN_CARD_MONTH_NUMBER..MAX_CARD_MONTH_NUMBER) {
             isValid = false
-            _invalidCardMonth.value = Event()
+            _liveDataInvalidCardMonth.value = Event()
         }
         val cardYear = card.cardYear
         if (cardYear == null ||
             cardYear !in Calendar.getInstance().get(Calendar.YEAR) % 100..MAX_CARD_YEAR_NUMBER
         ) {
             isValid = false
-            _invalidCardYear.value = Event()
+            _liveDataInvalidCardYear.value = Event()
         }
         if (!card.cardCvv.isCvvValid()) {
             isValid = false
-            _invalidCardCvv.value = Event()
+            _liveDataInvalidCardCvv.value = Event()
         }
         return isValid
     }
@@ -131,9 +131,9 @@ class OrderViewModel : ViewModel() {
                 dataProvider.saveOrder(order)
             }
             Basket.clear()
-            _orderCompleted.value = Event()
+            _liveDataOrderCompleted.value = Event()
         } catch (ex: Exception) {
-            _orderSaveError.value = Event()
+            _liveDataOrderSaveError.value = Event()
         }
     }
 

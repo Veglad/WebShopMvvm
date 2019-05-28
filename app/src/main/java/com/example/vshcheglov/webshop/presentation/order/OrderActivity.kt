@@ -46,50 +46,50 @@ class OrderActivity : AppCompatActivity() {
     }
 
     private fun initViewModelObservers() {
-        viewModel.orderPrice.observe(this, Observer { price ->
+        viewModel.liveDataOrderPrice.observe(this, Observer { price ->
             orderTotalPrice.text = String.format(getString(R.string.price_format), price)
         })
 
-        viewModel.isLoading.observe(this, Observer { isLoading ->
+        viewModel.liveDataIsLoading.observe(this, Observer { isLoading ->
             setShowProgress(isLoading)
         })
-        viewModel.invalidName.observe(this, Observer { event ->
+        viewModel.liveDataInvalidName.observe(this, Observer { event ->
             event.performEventIfNotHandled {
                 nameTextInput.error = resources.getString(R.string.order_invalid_name)
             }
         })
-        viewModel.invalidSecondName.observe(this, Observer { event ->
+        viewModel.liveDataInvalidSecondName.observe(this, Observer { event ->
             event.performEventIfNotHandled {
                 lastNameTextInput.error = resources.getString(R.string.order_invalid_last_name)
             }
         })
-        viewModel.invalidCardNumber.observe(this, Observer { event ->
+        viewModel.liveDataInvalidCardNumber.observe(this, Observer { event ->
             event.performEventIfNotHandled {
                 cardNumberTextInput.error = resources.getString(R.string.order_invalid_card_number)
             }
         })
-        viewModel.invalidCardMonth.observe(this, Observer { event ->
+        viewModel.liveDataInvalidCardMonth.observe(this, Observer { event ->
             event.performEventIfNotHandled {
                 cardMonthTextInput.error = resources.getString(R.string.order_invalid_card_month)
             }
         })
-        viewModel.invalidCardYear.observe(this, Observer { event ->
+        viewModel.liveDataInvalidCardYear.observe(this, Observer { event ->
             event.performEventIfNotHandled {
                 cardYearTextInput.error = resources.getString(R.string.order_invalid_card_year)
             }
         })
-        viewModel.invalidCardCvv.observe(this, Observer { event ->
+        viewModel.liveDataInvalidCardCvv.observe(this, Observer { event ->
             event.performEventIfNotHandled {
                 cardCvvTextInput.error = resources.getString(R.string.order_invalid_cv)
             }
         })
-        viewModel.noInternet.observe(this, Observer { event ->
+        viewModel.liveDataNoInternet.observe(this, Observer { event ->
             event.performEventIfNotHandled { showNoInternetError() }
         })
-        viewModel.orderSaveError.observe(this, Observer { event ->
+        viewModel.liveDataOrderSaveError.observe(this, Observer { event ->
             event.performEventIfNotHandled { showOrderSaveError() }
         })
-        viewModel.orderCompleted.observe(this, Observer { event ->
+        viewModel.liveDataOrderCompleted.observe(this, Observer { event ->
             event.performEventIfNotHandled { notifyOrderCompleted() }
         })
     }

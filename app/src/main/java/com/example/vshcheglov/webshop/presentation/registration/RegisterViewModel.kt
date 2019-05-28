@@ -26,37 +26,29 @@ class RegisterViewModel : ViewModel() {
     private val job: Job = Job()
     private val uiCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + job)
 
-    private val _showEmailInvalid = MutableLiveData<Event>()
-    val showEmailInvalid: LiveData<Event>
-        get() = _showEmailInvalid
+    private val _liveDataShowEmailInvalid = MutableLiveData<Event>()
+    val liveDataShowEmailInvalid: LiveData<Event> = _liveDataShowEmailInvalid
 
-    private val _showPasswordsNotMatch = MutableLiveData<Event>()
-    val showPasswordsNotMatch: LiveData<Event>
-        get() = _showPasswordsNotMatch
+    private val _liveDataShowPasswordsNotMatch = MutableLiveData<Event>()
+    val liveDataShowPasswordsNotMatch: LiveData<Event> = _liveDataShowPasswordsNotMatch
 
-    private val _showPasswordIsInvalid = MutableLiveData<Event>()
-    val showPasswordIsInvalid: LiveData<Event>
-        get() = _showPasswordIsInvalid
+    private val _liveDataShowPasswordIsInvalid = MutableLiveData<Event>()
+    val liveDataShowPasswordIsInvalid: LiveData<Event> = _liveDataShowPasswordIsInvalid
 
-    private val _showConfirmPasswordIsInvalid = MutableLiveData<Event>()
-    val showConfirmPasswordIsInvalid: LiveData<Event>
-        get() = _showConfirmPasswordIsInvalid
+    private val _liveDataShowConfirmPasswordInvalid = MutableLiveData<Event>()
+    val showConfirmPasswordInvalid: LiveData<Event> = _liveDataShowConfirmPasswordInvalid
 
-    private val _showNoInternet = MutableLiveData<Event>()
-    val showNoInternet: LiveData<Event>
-        get() = _showNoInternet
+    private val _liveDataShowNoInternet = MutableLiveData<Event>()
+    val liveDataShowNoInternet: LiveData<Event> = _liveDataShowNoInternet
 
-    private val _startMainScreen = MutableLiveData<Event>()
-    val startMainScreen: LiveData<Event>
-        get() = _startMainScreen
+    private val _liveDataStartMainScreen = MutableLiveData<Event>()
+    val liveDataStartMainScreen: LiveData<Event> = _liveDataStartMainScreen
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean>
-        get() = _isLoading
+    private val _liveDataIsLoading = MutableLiveData<Boolean>()
+    val liveDataIsLoading: LiveData<Boolean> = _liveDataIsLoading
 
-    private val _registrationError = MutableLiveData<Exception>()
-    val registrationError: LiveData<Exception>
-        get() = _registrationError
+    private val _liveDataRegistrationError = MutableLiveData<Exception>()
+    val liveDataRegistrationError: LiveData<Exception> = _liveDataRegistrationError
 
     init {
         App.appComponent.inject(this)
@@ -66,19 +58,19 @@ class RegisterViewModel : ViewModel() {
         var isValid = true
 
         if (!email.isEmailValid()) {
-            _showEmailInvalid.value = Event()
+            _liveDataShowEmailInvalid.value = Event()
             isValid = false
         }
         if (password != confirmPassword) {
-            _showPasswordsNotMatch.value = Event()
+            _liveDataShowPasswordsNotMatch.value = Event()
             isValid = false
         }
         if (!password.isPasswordValid()) {
-            _showPasswordIsInvalid.value = Event()
+            _liveDataShowPasswordIsInvalid.value = Event()
             isValid = false
         }
         if (!confirmPassword.isPasswordValid()) {
-            _showConfirmPasswordIsInvalid.value = Event()
+            _liveDataShowConfirmPasswordInvalid.value = Event()
             isValid = false
         }
 
@@ -86,13 +78,13 @@ class RegisterViewModel : ViewModel() {
             if (!isValid) return
             registerUserWithEmailAndPassword(email, password)
         } else {
-            _showNoInternet.value = Event()
+            _liveDataShowNoInternet.value = Event()
         }
     }
 
     private fun registerUserWithEmailAndPassword(email: String, password: String) {
         uiCoroutineScope.launch {
-            _isLoading.value = true
+            _liveDataIsLoading.value = true
             try {
                 dataProvider.registerUser(email, password)
 
@@ -103,19 +95,19 @@ class RegisterViewModel : ViewModel() {
                     }
                 }
 
-                _startMainScreen.value = Event()
+                _liveDataStartMainScreen.value = Event()
             } catch (ex: Exception) {
                 Timber.e("user registration error: $ex")
-                _registrationError.value = ex
+                _liveDataRegistrationError.value = ex
             } finally {
-                _isLoading.value = false
+                _liveDataIsLoading.value = false
             }
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        _isLoading.value = false
+        _liveDataIsLoading.value = false
         job.cancel()
     }
 }

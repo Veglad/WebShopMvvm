@@ -23,8 +23,6 @@ import com.example.vshcheglov.webshop.presentation.registration.RegisterActivity
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import kotlinx.android.synthetic.main.activity_login.*
-import nucleus5.factory.RequiresPresenter
-import nucleus5.view.NucleusAppCompatActivity
 import java.lang.Exception
 
 class LoginActivity : AppCompatActivity() {
@@ -61,47 +59,47 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun initViewModelObservers() {
-        viewModel.showEmailInvalid.observe(this,
+        viewModel.liveDataShowEmailInvalid.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled { emailTextInput.error = getString(R.string.email_error) }
             })
-        viewModel.showPasswordIsInvalid.observe(this,
+        viewModel.liveDataShowPasswordIsInvalid.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled { passwordTextInput.error = getString(R.string.password_error) }
             })
-        viewModel.showNoInternet.observe(this,
+        viewModel.liveDataShowNoInternet.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled { showMessage(getString(R.string.no_internet_connection_warning)) }
             })
-        viewModel.startMainScreen.observe(this,
+        viewModel.liveDataStartMainScreen.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled { startMainActivity() }
             })
-        viewModel.showBiometricError.observe(this,
+        viewModel.liveDataShowBiometricError.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled { showMessage(getString(R.string.biometric_error)) }
             })
-        viewModel.showNewBiometricEnrolled.observe(this,
+        viewModel.liveDataShowNewBiometricEnrolled.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled { showMessage(getString(R.string.biometric_enrolled_error_text)) }
             })
-        viewModel.hideBiometricPrompt.observe(this,
+        viewModel.liveDataHideBiometricPrompt.observe(this,
             Observer<Event> { event ->
                 event.performEventIfNotHandled { hideBiometricPromptFeature() }
             })
-        viewModel.isLoading.observe(this,
+        viewModel.liveDataIsLoading.observe(this,
             Observer<Boolean> { isLoading ->
                 setShowProgress(isLoading)
             })
-        viewModel.loginError.observe(this,
+        viewModel.liveDataLoginError.observe(this,
             Observer<Exception> { exception ->
                 showLoginError(exception)
             })
-        viewModel.showBiometricPrompt.observe(this,
+        viewModel.liveDataShowBiometricPrompt.observe(this,
             Observer<BiometricPrompt.CryptoObject> { cryptoObject ->
                 showBiometricPrompt(cryptoObject)
             })
-        viewModel.userEmail.observe(this,
+        viewModel.liveDataUserEmail.observe(this,
             Observer<String> { email ->
                 loginEmail.setText(email, TextView.BufferType.EDITABLE)
             })

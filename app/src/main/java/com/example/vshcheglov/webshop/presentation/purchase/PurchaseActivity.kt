@@ -12,8 +12,6 @@ import com.google.firebase.Timestamp
 import kotlinx.android.synthetic.main.activity_purchase.*
 import kotlinx.android.synthetic.main.message_with_action_layout.*
 import kotlinx.android.synthetic.main.purchase_list_layout.*
-import nucleus5.factory.RequiresPresenter
-import nucleus5.view.NucleusAppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -48,19 +46,19 @@ class PurchaseActivity : AppCompatActivity() {
     }
 
     private fun initViewModelObservers() {
-        viewModel.isLoading.observe(this,
+        viewModel.liveDataIsLoading.observe(this,
             Observer<Boolean> { isLoading ->
                 purchaseProgressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
             })
-        viewModel.products.observe(this,
+        viewModel.liveDataProducts.observe(this,
             Observer<List<Pair<OrderProduct, Timestamp>>> { products ->
                 showProducts(products)
             })
-        viewModel.showProductsLoadingError.observe(this,
+        viewModel.liveDataShowProductsLoadingError.observe(this,
             Observer<Exception> { ex ->
                 showProductsFetchingError(ex)
             })
-        viewModel.showNoProducts.observe(this,
+        viewModel.liveDataShowNoProducts.observe(this,
             Observer<Event> { products ->
                 showNoData()
             })

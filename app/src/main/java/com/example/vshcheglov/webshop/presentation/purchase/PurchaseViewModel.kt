@@ -20,21 +20,17 @@ class PurchaseViewModel : ViewModel() {
     private val job: Job = Job()
     private val uiCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + job)
 
-    private val _showNoProducts = MutableLiveData<Event>()
-    val showNoProducts: LiveData<Event>
-        get() = _showNoProducts
+    private val _liveDataShowNoProducts = MutableLiveData<Event>()
+    val liveDataShowNoProducts: LiveData<Event> = _liveDataShowNoProducts
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean>
-        get() = _isLoading
+    private val _liveDataIsLoading = MutableLiveData<Boolean>()
+    val liveDataIsLoading: LiveData<Boolean> = _liveDataIsLoading
 
-    private val _showProductsLoadingError = MutableLiveData<Exception>()
-    val showProductsLoadingError: LiveData<Exception>
-        get() = _showProductsLoadingError
+    private val _liveDataShowProductsLoadingError = MutableLiveData<Exception>()
+    val liveDataShowProductsLoadingError: LiveData<Exception> = _liveDataShowProductsLoadingError
 
-    private val _products = MutableLiveData<List<Pair<OrderProduct, Timestamp>>>()
-    val products: LiveData<List<Pair<OrderProduct, Timestamp>>>
-        get() = _products
+    private val _liveDataProducts = MutableLiveData<List<Pair<OrderProduct, Timestamp>>>()
+    val liveDataProducts: LiveData<List<Pair<OrderProduct, Timestamp>>> = _liveDataProducts
 
     init {
         App.appComponent.inject(this)
@@ -44,22 +40,22 @@ class PurchaseViewModel : ViewModel() {
     fun loadPurchasedProducts() {
         uiCoroutineScope.launch {
             try {
-                _isLoading.value = true
+                _liveDataIsLoading.value = true
                 val orderList = withContext(Dispatchers.IO) { dataProvider.getUserOrders() }
 
                 if (orderList.isNotEmpty()) {
                     val productToTimeStampList = orderList.map { order ->
                         order.orderProducts.map { Pair(it, order.timestamp) }
                     }.flatten()
-                    _products.value = productToTimeStampList
+                    _liveDataProducts.value = productToTimeStampList
                 } else {
-                    _showNoProducts.value = Event()
+                    _liveDataShowNoProducts.value = Event()
                 }
             } catch (ex: Exception) {
                 Timber.d("Getting user products error: $ex")
-                _showProductsLoadingError.value = ex
+                _liveDataShowProductsLoadingError.value = ex
             } finally {
-                _isLoading.value = false
+                _liveDataIsLoading.value = false
             }
         }
     }

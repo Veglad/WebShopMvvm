@@ -27,7 +27,6 @@ import kotlinx.android.synthetic.main.main_error_layout.*
 import kotlinx.android.synthetic.main.main_products.*
 import kotlinx.android.synthetic.main.main_search_empty.*
 import kotlinx.android.synthetic.main.main_search_list.*
-import nucleus5.factory.RequiresPresenter
 import android.app.Activity
 import android.content.ComponentName
 import android.graphics.Bitmap
@@ -41,7 +40,6 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -127,22 +125,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViewModelObservers() {
-        viewModel.searchProductList.observe(this,
+        viewModel.liveDataSearchProductList.observe(this,
             Observer<List<Product>> { products -> showSearchedProducts(products) })
-        viewModel.productList.observe(this,
+        viewModel.liveDataProductList.observe(this,
             Observer<MutableList<Product>> { products -> showProductList(products) })
-        viewModel.promotionalProductList.observe(this,
+        viewModel.liveDataPromotionalProductList.observe(this,
             Observer<MutableList<Product>> { products -> showPromotionalProductList(products) })
-        viewModel.isLoading.observe(this, Observer<Boolean> { isLoading -> showLoading(isLoading) })
-        viewModel.avatarImage.observe(this, Observer<Bitmap?> { bitmap -> setUserAvatarImage(bitmap) })
-        viewModel.userEmail.observe(this, Observer<String?> { email -> showUserEmail(email) })
-        viewModel.showError.observe(this, Observer<EventWithContent<Exception>> { event ->
+        viewModel.liveDataIsLoading.observe(this, Observer<Boolean> { isLoading -> showLoading(isLoading) })
+        viewModel.liveDataAvatarImage.observe(this, Observer<Bitmap?> { bitmap -> setUserAvatarImage(bitmap) })
+        viewModel.liveDataUserEmail.observe(this, Observer<String?> { email -> showUserEmail(email) })
+        viewModel.liveDataShowError.observe(this, Observer<EventWithContent<Exception>> { event ->
             event.getContentIfNotHandled()?.let { ex -> showError(ex) }
         })
-        viewModel.showNoInternetWarning.observe(this, Observer<Event> { event ->
+        viewModel.liveDataShowNoInternetWarning.observe(this, Observer<Event> { event ->
             event.performEventIfNotHandled { showNoInternetWarning() }
         })
-        viewModel.startLoginActivity.observe(this, Observer<Event> { event ->
+        viewModel.liveDataStartLoginActivity.observe(this, Observer<Event> { event ->
             event.performEventIfNotHandled { startLoginActivity() }
         })
     }

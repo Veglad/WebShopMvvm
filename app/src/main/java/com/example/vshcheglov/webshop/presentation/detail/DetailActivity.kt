@@ -12,8 +12,6 @@ import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.Product
 import com.example.vshcheglov.webshop.presentation.basket.BasketActivity
 import kotlinx.android.synthetic.main.activity_detail.*
-import nucleus5.factory.RequiresPresenter
-import nucleus5.view.NucleusAppCompatActivity
 
 
 class DetailActivity : AppCompatActivity() {
@@ -42,8 +40,8 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun initViewModelObservers() {
-        viewModel.productInfo.observe(this, Observer { productInfo -> showProductInfo(productInfo) })
-        viewModel.startBasketScreen.observe(this, Observer { event ->
+        viewModel.liveDataProductInfo.observe(this, Observer { productInfo -> showProductInfo(productInfo) })
+        viewModel.liveDataStartBasketScreen.observe(this, Observer { event ->
             event.performEventIfNotHandled { startBasketActivity() }
         })
     }

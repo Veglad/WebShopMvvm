@@ -27,49 +27,38 @@ class LoginViewModel : ViewModel() {
     private val job: Job = Job()
     private val uiCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + job)
 
-    private val _showEmailInvalid = MutableLiveData<Event>()
-    val showEmailInvalid: LiveData<Event>
-        get() = _showEmailInvalid
+    private val _liveDataShowEmailInvalid = MutableLiveData<Event>()
+    val liveDataShowEmailInvalid: LiveData<Event> = _liveDataShowEmailInvalid
 
-    private val _showPasswordIsInvalid = MutableLiveData<Event>()
-    val showPasswordIsInvalid: LiveData<Event>
-        get() = _showPasswordIsInvalid
+    private val _liveDataShowPasswordIsInvalid = MutableLiveData<Event>()
+    val liveDataShowPasswordIsInvalid: LiveData<Event> = _liveDataShowPasswordIsInvalid
 
-    private val _showNoInternet = MutableLiveData<Event>()
-    val showNoInternet: LiveData<Event>
-        get() = _showNoInternet
+    private val _liveDataShowNoInternet = MutableLiveData<Event>()
+    val liveDataShowNoInternet: LiveData<Event> = _liveDataShowNoInternet
 
-    private val _startMainScreen = MutableLiveData<Event>()
-    val startMainScreen: LiveData<Event>
-        get() = _startMainScreen
+    private val _liveDataStartMainScreen = MutableLiveData<Event>()
+    val liveDataStartMainScreen: LiveData<Event> = _liveDataStartMainScreen
 
-    private val _showBiometricError = MutableLiveData<Event>()
-    val showBiometricError: LiveData<Event>
-        get() = _showBiometricError
+    private val _liveDataShowBiometricError = MutableLiveData<Event>()
+    val liveDataShowBiometricError: LiveData<Event> = _liveDataShowBiometricError
 
-    private val _hideBiometricPrompt = MutableLiveData<Event>()
-    val hideBiometricPrompt: LiveData<Event>
-        get() = _hideBiometricPrompt
+    private val _liveDataHideBiometricPrompt = MutableLiveData<Event>()
+    val liveDataHideBiometricPrompt: LiveData<Event> = _liveDataHideBiometricPrompt
 
-    private val _showNewBiometricEnrolled = MutableLiveData<Event>()
-    val showNewBiometricEnrolled: LiveData<Event>
-        get() = _showNewBiometricEnrolled
+    private val _liveDataShowNewBiometricEnrolled = MutableLiveData<Event>()
+    val liveDataShowNewBiometricEnrolled: LiveData<Event> = _liveDataShowNewBiometricEnrolled
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean>
-        get() = _isLoading
+    private val _liveDataIsLoading = MutableLiveData<Boolean>()
+    val liveDataIsLoading: LiveData<Boolean> = _liveDataIsLoading
 
-    private val _loginError = MutableLiveData<Exception>()
-    val loginError: LiveData<Exception>
-        get() = _loginError
+    private val _liveDataLoginError = MutableLiveData<Exception>()
+    val liveDataLoginError: LiveData<Exception> = _liveDataLoginError
 
-    private val _showBiometricPrompt = MutableLiveData<BiometricPrompt.CryptoObject>()
-    val showBiometricPrompt: LiveData<BiometricPrompt.CryptoObject>
-        get() = _showBiometricPrompt
+    private val _liveDataShowBiometricPrompt = MutableLiveData<BiometricPrompt.CryptoObject>()
+    val liveDataShowBiometricPrompt: LiveData<BiometricPrompt.CryptoObject> = _liveDataShowBiometricPrompt
 
-    private val _userEmail = MutableLiveData<String>()
-    val userEmail: LiveData<String>
-        get() = _userEmail
+    private val _liveDataUserEmail = MutableLiveData<String>()
+    val liveDataUserEmail: LiveData<String> = _liveDataUserEmail
 
     init {
         App.appComponent.inject(this)
@@ -79,11 +68,11 @@ class LoginViewModel : ViewModel() {
     fun logInUser(email: String, password: String, isNetworkAvailable: Boolean) {
         var isValid = true
         if (!email.isEmailValid()) {
-            _showEmailInvalid.value = Event()
+            _liveDataShowEmailInvalid.value = Event()
             isValid = false
         }
         if (!password.isPasswordValid()) {
-            _showPasswordIsInvalid.value = Event()
+            _liveDataShowPasswordIsInvalid.value = Event()
             isValid = false
         }
 
@@ -91,13 +80,13 @@ class LoginViewModel : ViewModel() {
             if (!isValid) return
             performLogin(email, password)
         } else {
-            _showNoInternet.value = Event()
+            _liveDataShowNoInternet.value = Event()
         }
     }
 
     private fun performLogin(email: String, password: String) {
         uiCoroutineScope.launch {
-            _isLoading.value = true
+            _liveDataIsLoading.value = true
             try {
                 dataProvider.signInUser(email, password)
 
@@ -108,12 +97,12 @@ class LoginViewModel : ViewModel() {
                     }
                 }
 
-                _startMainScreen.value = Event()
+                _liveDataStartMainScreen.value = Event()
             } catch (ex: Exception) {
                 Timber.e("user sign in error: $ex")
-                _loginError.value = ex
+                _liveDataLoginError.value = ex
             } finally {
-                _isLoading.value = false
+                _liveDataIsLoading.value = false
             }
         }
     }
@@ -122,10 +111,10 @@ class LoginViewModel : ViewModel() {
         if (dataProvider.containsUserCredentials()) {
             val credentials = dataProvider.getUserCredentials()
             credentials?.let {
-                _userEmail.value = credentials.email
+                _liveDataUserEmail.value = credentials.email
             }
         } else {
-            _hideBiometricPrompt.value = Event()
+            _liveDataHideBiometricPrompt.value = Event()
         }
     }
 
@@ -133,35 +122,35 @@ class LoginViewModel : ViewModel() {
         if (dataProvider.containsUserCredentials()) {
             val cryptoObject = encryptor.cryptoObject
             if (cryptoObject != null) {
-                _showBiometricPrompt.value = cryptoObject
+                _liveDataShowBiometricPrompt.value = cryptoObject
             } else {
                 dataProvider.deleteUserCredentials()
-                _showNewBiometricEnrolled.value = Event()
+                _liveDataShowNewBiometricEnrolled.value = Event()
             }
         } else {
-            _hideBiometricPrompt.value = Event()
+            _liveDataHideBiometricPrompt.value = Event()
         }
     }
 
     fun authenticateUser(cipher: Cipher?, isNetworkAvailable: Boolean) {
         val userCredentials = dataProvider.getUserCredentials()
         if (cipher == null) {
-            _showBiometricError.value = Event()
+            _liveDataShowBiometricError.value = Event()
             Timber.e("Cipher is null")
         } else if (userCredentials == null) {
             Timber.e("Incorrect saved credentials")
-            _showBiometricError.value = Event()
+            _liveDataShowBiometricError.value = Event()
         } else {
             val password = encryptor.decode(userCredentials.encryptedPassword, cipher)
             if (password != null) {
                 if (isNetworkAvailable) {
                     performLogin(userCredentials.email, password)
                 } else {
-                    _showNoInternet.value = Event()
+                    _liveDataShowNoInternet.value = Event()
                 }
             } else {
                 Timber.e("Password decryption error")
-                _showBiometricError.value = Event()
+                _liveDataShowBiometricError.value = Event()
             }
         }
     }
@@ -169,6 +158,6 @@ class LoginViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         job.cancel()
-        _isLoading.value = false
+        _liveDataIsLoading.value = false
     }
 }

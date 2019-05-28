@@ -25,51 +25,51 @@ class BasketViewModel : ViewModel() {
         fun setTotalProductPriceTitle(position: Int, totalPrice: Double, percentageDiscount: Double)
     }
 
-    private val _basketAmount = MutableLiveData<Double>()
-    val basketAmount: LiveData<Double> = _basketAmount
+    private val _liveDataBasketAmount = MutableLiveData<Double>()
+    val liveDataBasketAmount: LiveData<Double> = _liveDataBasketAmount
 
-    private val _basketItemNumber = MutableLiveData<String>()
-    val basketItemNumber: LiveData<String> = _basketItemNumber
+    private val _liveDataBasketItemNumber = MutableLiveData<String>()
+    val liveDataBasketItemNumber: LiveData<String> = _liveDataBasketItemNumber
 
-    private val _basket = MutableLiveData<MutableList<ProductBasketCard>>()
-    val basket: LiveData<MutableList<ProductBasketCard>> = _basket
+    private val _liveDataBasket = MutableLiveData<MutableList<ProductBasketCard>>()
+    val liveDataBasket: LiveData<MutableList<ProductBasketCard>> = _liveDataBasket
 
-    private val _basketIsEmpty = MutableLiveData<Boolean>()
-    val basketIsEmpty: LiveData<Boolean> = _basketIsEmpty
+    private val _liveDataBasketIsEmpty = MutableLiveData<Boolean>()
+    val liveDataBasketIsEmpty: LiveData<Boolean> = _liveDataBasketIsEmpty
 
-    private val _sameProductNumber = MutableLiveData<Pair<Int, Int>>()
-    val sameProductNumber: LiveData<Pair<Int, Int>> = _sameProductNumber
+    private val _liveDataSameProductNumber = MutableLiveData<Pair<Int, Int>>()
+    val liveDataSameProductNumber: LiveData<Pair<Int, Int>> = _liveDataSameProductNumber
 
-    private val _totalProductPrice = MutableLiveData<Pair<Int, Double>>()
-    val totalProductPrice: LiveData<Pair<Int, Double>> = _totalProductPrice
+    private val _liveDataTotalProductPrice = MutableLiveData<Pair<Int, Double>>()
+    val liveDataTotalProductPrice: LiveData<Pair<Int, Double>> = _liveDataTotalProductPrice
 
-    private val _totalProductPriceTitle = MutableLiveData<TotalProductPriceTitle>()
-    val totalProductPriceTitle: LiveData<TotalProductPriceTitle> = _totalProductPriceTitle
+    private val _liveDataTotalProductPriceTitle = MutableLiveData<TotalProductPriceTitle>()
+    val liveDataTotalProductPriceTitle: LiveData<TotalProductPriceTitle> = _liveDataTotalProductPriceTitle
 
-    private val _startOrderScreen = MutableLiveData<Event>()
-    val startOrderScreen: LiveData<Event> = _startOrderScreen
+    private val _liveDataStartOrderScreen = MutableLiveData<Event>()
+    val liveDataStartOrderScreen: LiveData<Event> = _liveDataStartOrderScreen
 
-    private val _removeItem = MutableLiveData<EventWithContent<Int>>()
-    val removeItem: LiveData<EventWithContent<Int>> = _removeItem
+    private val _liveDataRemoveItem = MutableLiveData<EventWithContent<Int>>()
+    val liveDataRemoveItem: LiveData<EventWithContent<Int>> = _liveDataRemoveItem
 
-    private val _restoreItem = MutableLiveData<EventWithContent<Int>>()
-    val restoreItem: LiveData<EventWithContent<Int>> = _restoreItem
+    private val _liveDataRestoreItem = MutableLiveData<EventWithContent<Int>>()
+    val liveDataRestoreItem: LiveData<EventWithContent<Int>> = _liveDataRestoreItem
 
     init {
         App.appComponent.inject(this)
     }
 
     fun makeOrder() {
-        _startOrderScreen.value = Event()
+        _liveDataStartOrderScreen.value = Event()
     }
 
     fun initProductListWithBasketInfo() {
         updateBasketInfo()
 
         val isBasketEmpty = Basket.productsNumber == 0
-        _basketIsEmpty.value = isBasketEmpty
+        _liveDataBasketIsEmpty.value = isBasketEmpty
         if (!isBasketEmpty) {
-            _basket.value = productBasketCardMapper.map(Basket)
+            _liveDataBasket.value = productBasketCardMapper.map(Basket)
         }
     }
 
@@ -91,10 +91,10 @@ class BasketViewModel : ViewModel() {
 
         updateBasketInfo()
 
-        _sameProductNumber.value = position to productCount
-        _totalProductPrice.value = position to Basket.getSameProductDiscountPrice(product.id)
+        _liveDataSameProductNumber.value = position to productCount
+        _liveDataTotalProductPrice.value = position to Basket.getSameProductDiscountPrice(product.id)
         if (product.percentageDiscount > 0) {
-            _totalProductPriceTitle.value = TotalProductPriceTitle(
+            _liveDataTotalProductPriceTitle.value = TotalProductPriceTitle(
                 position,
                 Basket.getSameProductPrice(product.id),
                 product.percentageDiscount.toDouble()
@@ -104,8 +104,8 @@ class BasketViewModel : ViewModel() {
 
 
     private fun updateBasketInfo() {
-        _basketAmount.value = Basket.totalPriceWithDiscount
-        _basketItemNumber.value = Basket.productsNumber.toString()
+        _liveDataBasketAmount.value = Basket.totalPriceWithDiscount
+        _liveDataBasketItemNumber.value = Basket.productsNumber.toString()
     }
 
     fun removeProductFromBasket(position: Int) {
@@ -114,16 +114,16 @@ class BasketViewModel : ViewModel() {
 
         Basket.removeSameProducts(position)
 
-        _removeItem.value = EventWithContent(position)
-        _basketIsEmpty.value = Basket.productsNumber == 0
+        _liveDataRemoveItem.value = EventWithContent(position)
+        _liveDataBasketIsEmpty.value = Basket.productsNumber == 0
 
         updateBasketInfo()
     }
 
     fun restoreProductCard() {
         Basket.addProductToCountEntry(productToCount, deletedIndex)
-        _basketIsEmpty.value = Basket.productsNumber == 0
-        _restoreItem.value = EventWithContent(deletedIndex)
+        _liveDataBasketIsEmpty.value = Basket.productsNumber == 0
+        _liveDataRestoreItem.value = EventWithContent(deletedIndex)
         updateBasketInfo()
     }
 }

@@ -11,19 +11,19 @@ class DetailViewModel : ViewModel() {
 
     private lateinit var product: Product
 
-    private val _startBasketScreen = MutableLiveData<Event>()
-    val startBasketScreen: LiveData<Event> = _startBasketScreen
+    private val _liveDataStartBasketScreen = MutableLiveData<Event>()
+    val liveDataStartBasketScreen: LiveData<Event> = _liveDataStartBasketScreen
 
-    private val _productInfo = MutableLiveData<Product>()
-    val productInfo: LiveData<Product> = _productInfo
+    private val _liveDataProductInfo = MutableLiveData<Product>()
+    val liveDataProductInfo: LiveData<Product> = _liveDataProductInfo
 
     fun showProductInfo(product: Product?) {
         this.product = product ?: Product()
-        _productInfo.value = this.product
+        _liveDataProductInfo.value = this.product
     }
 
     fun buyProduct() {
         Basket.addProduct(product)
-        _startBasketScreen.value = Event()
+        _liveDataStartBasketScreen.value = Event()
     }
 }
