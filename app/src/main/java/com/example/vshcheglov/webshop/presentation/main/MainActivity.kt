@@ -76,27 +76,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        initViewModelObservers()
+        viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
+        viewModel.commandLiveData.observe(this, Observer { commandEvent ->
+            commandEvent.getContentIfNotHandled()?.let { command -> performCommand(command) }
+        })
+
         viewModel.loadProducts(isNetworkAvailable())
 
-        tryAgainButton.setOnClickListener {
-            val isNetworkAvailable = isNetworkAvailable()
-
-            setErrorVisibility(!isNetworkAvailable)
-            viewModel.forceLoadProducts(isNetworkAvailable)
-            if (isNetworkAvailable) {
-                snackbar?.dismiss()
-            }
-        }
-
-        productsSwipeRefreshLayout.setOnRefreshListener {
-            val isNetworkAvailable = isNetworkAvailable()
-
-            viewModel.forceLoadProducts(isNetworkAvailable)
-            if (isNetworkAvailable) {
-                snackbar?.dismiss()
-            }
-        }
+        tryAgainButton.setOnClickListener { loadProducts() }
+        productsSwipeRefreshLayout.setOnRefreshListener  { loadProducts() }
 
         productsSwipeRefreshLayout.setColorSchemeColors(
             ContextCompat.getColor(this, R.color.primary),
@@ -124,25 +112,35 @@ class MainActivity : AppCompatActivity() {
         initNavigationDrawer()
     }
 
-    private fun initViewModelObservers() {
-        viewModel.liveDataSearchProductList.observe(this,
-            Observer<List<Product>> { products -> showSearchedProducts(products) })
-        viewModel.liveDataProductList.observe(this,
-            Observer<MutableList<Product>> { products -> showProductList(products) })
-        viewModel.liveDataPromotionalProductList.observe(this,
-            Observer<MutableList<Product>> { products -> showPromotionalProductList(products) })
-        viewModel.liveDataIsLoading.observe(this, Observer<Boolean> { isLoading -> showLoading(isLoading) })
-        viewModel.liveDataAvatarImage.observe(this, Observer<Bitmap?> { bitmap -> setUserAvatarImage(bitmap) })
-        viewModel.liveDataUserEmail.observe(this, Observer<String?> { email -> showUserEmail(email) })
-        viewModel.liveDataShowError.observe(this, Observer<EventWithContent<Exception>> { event ->
-            event.getContentIfNotHandled()?.let { ex -> showError(ex) }
-        })
-        viewModel.liveDataShowNoInternetWarning.observe(this, Observer<Event> { event ->
-            event.performEventIfNotHandled { showNoInternetWarning() }
-        })
-        viewModel.liveDataStartLoginActivity.observe(this, Observer<Event> { event ->
-            event.performEventIfNotHandled { startLoginActivity() }
-        })
+    private fun loadProducts() {
+        val isNetworkAvailable = isNetworkAvailable()
+
+        setErrorVisibility(!isNetworkAvailable)
+        viewModel.forceLoadProducts(isNetworkAvailable)
+        if (isNetworkAvailable) {
+            snackbar?.dismiss()
+        }
+    }
+
+    private fun performCommand(command: MainCommand) {
+        when (command) {
+            is MainCommand.ShowError -> showError(command.exception)
+            is MainCommand.ShowNoInternet -> showNoInternetWarning()
+            is MainCommand.StartLoginScreen -> startLoginActivity()
+        }
+    }
+
+    private fun updateUi(state: MainViewState) {
+        showUserEmail(state.userEmail)
+        setUserAvatarImage(state.avatarImage)
+
+        if (mainProductsLayout.visibility == View.VISIBLE) {
+            showLoading(state.isLoading)
+            showProductList(state.productList)
+            showPromotionalProductList(state.promotionalProductList)
+        } else {
+            showSearchedProducts(state.searchProductList)
+        }
     }
 
     private fun onBuyClicked(product: Product) {

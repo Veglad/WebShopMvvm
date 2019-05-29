@@ -26,32 +26,15 @@ class MainViewModel : ViewModel() {
     private val job: Job = Job()
     private val uiCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + job)
 
-    private val _liveDataSearchProductList = MutableLiveData<List<Product>>().apply { value = listOf() }
-    val liveDataSearchProductList: LiveData<List<Product>> = _liveDataSearchProductList
+    private val _stateLiveData: MutableLiveData<MainViewState> = MutableLiveData<MainViewState>().apply {
+        value = MainViewState()
+    }
+    val stateLiveData: LiveData<MainViewState> = _stateLiveData
 
-    private val _liveDataProductList = MutableLiveData<MutableList<Product>>().apply { value = mutableListOf() }
-    val liveDataProductList: LiveData<MutableList<Product>> = _liveDataProductList
+    private val _commandLiveData: MutableLiveData<EventWithContent<MainCommand>> = MutableLiveData()
+    val commandLiveData: LiveData<EventWithContent<MainCommand>> = _commandLiveData
 
-    private val _liveDataPromotionalProductList = MutableLiveData<MutableList<Product>>().apply { value = mutableListOf() }
-    val liveDataPromotionalProductList: LiveData<MutableList<Product>> = _liveDataPromotionalProductList
-
-    private val _liveDataIsLoading = MutableLiveData<Boolean>().apply { value = false }
-    val liveDataIsLoading: LiveData<Boolean> = _liveDataIsLoading
-
-    private val _liveDataAvatarImage = MutableLiveData<Bitmap?>().apply { value = null }
-    val liveDataAvatarImage: LiveData<Bitmap?> = _liveDataAvatarImage
-
-    private val _liveDataUserEmail = MutableLiveData<String?>().apply { value = null }
-    val liveDataUserEmail: LiveData<String?> = _liveDataUserEmail
-
-    private val _liveDataShowError = MutableLiveData<EventWithContent<Exception>>()
-    val liveDataShowError: LiveData<EventWithContent<Exception>> = _liveDataShowError
-
-    private val _liveDataShowNoInternetWarning = MutableLiveData<Event>()
-    val liveDataShowNoInternetWarning: LiveData<Event> = _liveDataShowNoInternetWarning
-
-    private val _liveDataStartLoginActivity = MutableLiveData<Event>()
-    val liveDataStartLoginActivity: LiveData<Event> = _liveDataStartLoginActivity
+    private fun getState() = stateLiveData.value!!
 
     init {
         App.appComponent.inject(this)
@@ -61,24 +44,25 @@ class MainViewModel : ViewModel() {
             loadUserEmail()
             loadUserAvatar()
         } catch (e: Exception) {
-            _liveDataShowNoInternetWarning.value = Event()
-            _liveDataIsLoading.value = false
+            setCommand(MainCommand.ShowNoInternet)
+        } finally {
+            _stateLiveData.value = getState().copy(isLoading = false)
         }
 
         if (isNeedToSaveAvatar) {
-            _liveDataAvatarImage.value?.let { bitmap ->
+            getState().avatarImage?.let { bitmap ->
                 uiCoroutineScope.launch {
                     withContext(Dispatchers.IO) {
                         dataProvider.saveUserProfilePhoto(bitmap, "JPEG_" + UUID.randomUUID())
                     }
-                    isNeedToSaveAvatar = false//TODO: Handle if photo not saved (Use WorkManager)
+                    isNeedToSaveAvatar = false//TODO: Handle if photo is not saved (Use WorkManager)
                 }
             }
         }
     }
 
     fun loadProducts(isNetworkAvailable: Boolean) {
-        if (_liveDataProductList.value?.isEmpty() != false && _liveDataProductList.value?.isEmpty() != false) {
+        if (getState().productList.isEmpty() || getState().promotionalProductList.isEmpty()) {
             forceLoadProducts(isNetworkAvailable)
         }
     }
@@ -87,54 +71,57 @@ class MainViewModel : ViewModel() {
         if (isNetworkAvailable) {
             fetchProducts()
         } else {
-            _liveDataShowNoInternetWarning.value = Event()
-            _liveDataIsLoading.value = false
+            setCommand(MainCommand.ShowNoInternet)
+            _stateLiveData.value = getState().copy(isLoading = false)
         }
     }
 
     private fun fetchProducts() {
         uiCoroutineScope.launch {
             try {
-                _liveDataIsLoading.value = true
+                _stateLiveData.value = getState().copy(isLoading = true)
 
                 val productsDeferred = uiCoroutineScope.async { dataProvider.getProducts() }
                 val promotionalProductsDeferred = uiCoroutineScope.async { dataProvider.getPromotionalProducts() }
-                _liveDataProductList.value = productsDeferred.await()
-                _liveDataPromotionalProductList.value = promotionalProductsDeferred.await()
+                val productList = productsDeferred.await()
+                val promotionalProductList = promotionalProductsDeferred.await()
+
+                _stateLiveData.value =
+                    getState().copy(productList = productList, promotionalProductList = promotionalProductList)
 
             } catch (ex: Exception) {
                 Timber.e("Products fetching error:$ex")
-                _liveDataShowError.value = EventWithContent(ex)
+                setCommand(MainCommand.ShowError(ex))
             } finally {
-                _liveDataIsLoading.value = false
+                _stateLiveData.value = getState().copy(isLoading = false)
             }
         }
     }
 
     private fun loadUserEmail() {
-        if (_liveDataUserEmail.value == null) {
+        if (getState().userEmail == null) {
             uiCoroutineScope.launch {
                 try {
                     val user = withContext(Dispatchers.IO) { dataProvider.getCurrentUser() }
-                    _liveDataUserEmail.value = user.email
+                    _stateLiveData.value = getState().copy(userEmail = user.email)
                 } catch (ex: Exception) {
-                    _liveDataUserEmail.value = null
+                    _stateLiveData.value = getState().copy(userEmail = null)
                 }
             }
         }
     }
 
     private fun loadUserAvatar() {
-        if (_liveDataAvatarImage.value == null) {
+        if (getState().avatarImage == null) {
             uiCoroutineScope.launch {
                 try {
                     val avatarByteArray = withContext(Dispatchers.IO) { dataProvider.getUserAvatarByteArray() }
                     val avatarBitmap = withContext(Dispatchers.Default) {
                         BitmapFactory.decodeByteArray(avatarByteArray, 0, avatarByteArray.size)
                     }
-                    _liveDataAvatarImage.value = avatarBitmap
+                    _stateLiveData.value = getState().copy(avatarImage = avatarBitmap)
                 } catch (ex: Exception) {
-                    _liveDataAvatarImage.value = null
+                    _stateLiveData.value = getState().copy(avatarImage = null)
                 }
             }
         }
@@ -142,27 +129,24 @@ class MainViewModel : ViewModel() {
 
     fun logOut() {
         dataProvider.logOut()
-        _liveDataStartLoginActivity.value = Event()
+        setCommand(MainCommand.StartLoginScreen)
     }
 
     fun searchProducts(searchText: String) {
-        _liveDataIsLoading.value = true
-        _liveDataProductList.value?.let {
-            val searchFilter = SearchFilter(it) { productList: List<Product>? ->
-                _liveDataIsLoading.value = false
-                if (productList == null || productList.isEmpty()) {
-                    _liveDataSearchProductList.value = listOf()
-                } else {
-                    _liveDataSearchProductList.value = productList
-                }
+        val searchFilter = SearchFilter(getState().productList) { productList: List<Product>? ->
+            if (productList == null || productList.isEmpty()) {
+                _stateLiveData.value = getState().copy(searchProductList = listOf())
+            } else {
+                _stateLiveData.value = getState().copy(searchProductList = productList)
             }
-            searchFilter.filter.filter(searchText)
         }
+        searchFilter.filter.filter(searchText)
+
     }
 
     //This Method called from OnActivityResult (before onResume) => view == null
     fun updateUserProfilePhoto(profilePhotoBitmap: Bitmap) {
-        _liveDataAvatarImage.value = profilePhotoBitmap
+        _stateLiveData.value = getState().copy(avatarImage = profilePhotoBitmap)
         isNeedToSaveAvatar = true
     }
 
@@ -170,8 +154,27 @@ class MainViewModel : ViewModel() {
         Basket.addProduct(product)
     }
 
+    private fun setCommand(command: MainCommand) {
+        _commandLiveData.value = EventWithContent(command)
+    }
+
     override fun onCleared() {
         super.onCleared()
         job.cancel()
     }
+}
+
+data class MainViewState(
+    var isLoading: Boolean = false,
+    var productList: MutableList<Product> = mutableListOf(),
+    var promotionalProductList: MutableList<Product> = mutableListOf(),
+    var searchProductList: List<Product> = listOf(),
+    var avatarImage: Bitmap? = null,
+    var userEmail: String? = null
+)
+
+sealed class MainCommand {
+    class ShowError(val exception: Exception) : MainCommand()
+    object ShowNoInternet : MainCommand()
+    object StartLoginScreen : MainCommand()
 }
