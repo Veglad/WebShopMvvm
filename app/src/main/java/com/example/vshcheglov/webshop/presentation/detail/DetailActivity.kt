@@ -40,15 +40,14 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun initViewModelObservers() {
-        viewModel.liveDataProductInfo.observe(this, Observer { productInfo -> showProductInfo(productInfo) })
-        viewModel.liveDataStartBasketScreen.observe(this, Observer { event ->
-            event.performEventIfNotHandled { startBasketActivity() }
+        viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
+        viewModel.commandLiveData.observe(this, Observer { commandEvent ->
+            commandEvent.getContentIfNotHandled()?.let { command -> performCommand(command) }
         })
     }
 
-    override fun onResume() {
-        super.onResume()
-        viewModel?.showProductInfo(intent.extras?.getParcelable(DetailActivity.PRODUCT_KEY))
+    private fun updateUi(state: DetailViewState) {
+        showProductInfo(state.product)
     }
 
     private fun showProductInfo(product: Product) {
@@ -69,6 +68,17 @@ class DetailActivity : AppCompatActivity() {
         }
     }
 
+    private fun performCommand(command: DetailCommand) {
+        when (command) {
+            is DetailCommand.StartBasketScreen -> startBasketActivity()
+        }
+    }
+
+    private fun startBasketActivity() {
+        val intent = Intent(this, BasketActivity::class.java)
+        startActivity(intent)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             android.R.id.home -> onBackPressed()
@@ -76,8 +86,8 @@ class DetailActivity : AppCompatActivity() {
         return true
     }
 
-    private fun startBasketActivity() {
-        val intent = Intent(this, BasketActivity::class.java)
-        startActivity(intent)
+    override fun onResume() {
+        super.onResume()
+        viewModel?.showProductInfo(intent.extras?.getParcelable(DetailActivity.PRODUCT_KEY))
     }
 }
