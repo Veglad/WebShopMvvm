@@ -50,7 +50,12 @@ class PurchaseActivity : AppCompatActivity() {
 
     private fun updateUi(state: PurchaseViewState) {
         purchaseProgressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
-        showProducts(state.products)
+
+        if (state.products.isEmpty() && !state.isLoading) {
+            showNoData()
+        } else {
+            showProducts(state.products)
+        }
     }
 
     private fun performCommand(commandSingleEvent: EventWithContent<PurchaseCommand>) {
@@ -88,8 +93,8 @@ class PurchaseActivity : AppCompatActivity() {
     }
 
     private fun showNoData() {
-        //purchaseListLayout.visibility = View.GONE
-        //purchaseErrorLayout.visibility = View.VISIBLE
+        purchaseListLayout.visibility = View.GONE
+        purchaseErrorLayout.visibility = View.VISIBLE
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
