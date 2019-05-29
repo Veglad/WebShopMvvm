@@ -27,7 +27,10 @@ class OrderActivity : AppCompatActivity() {
         setContentView(R.layout.activity_order)
 
         viewModel = ViewModelProviders.of(this).get(OrderViewModel::class.java)
-        initViewModelObservers()
+        viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
+        viewModel.commandLiveData.observe(this, Observer { commandEvent ->
+            commandEvent.getContentIfNotHandled()?.let { command -> performCommand(command) }
+        })
 
         orderButton.setOnClickListener {
             val name = orderName.text.toString()
@@ -45,53 +48,29 @@ class OrderActivity : AppCompatActivity() {
         initActionBar()
     }
 
-    private fun initViewModelObservers() {
-        viewModel.liveDataOrderPrice.observe(this, Observer { price ->
-            orderTotalPrice.text = String.format(getString(R.string.price_format), price)
-        })
+    private fun performCommand(command: OrderCommand) {
+        when (command) {
+            is OrderCommand.ShowNoInternet -> showNoInternetError()
+            is OrderCommand.ShowInvalidName -> nameTextInput.error = resources.getString(R.string.order_invalid_name)
+            is OrderCommand.ShowInvalidSecondName -> {
+                lastNameTextInput.error = getString(R.string.order_invalid_last_name)
+            }
+            is OrderCommand.ShowInvalidCardNumber -> {
+                cardNumberTextInput.error = getString(R.string.order_invalid_card_number)
+            }
+            is OrderCommand.ShowInvalidCardMonth -> {
+                cardMonthTextInput.error = getString(R.string.order_invalid_card_month)
+            }
+            is OrderCommand.ShowInvalidCardYear -> cardYearTextInput.error = getString(R.string.order_invalid_card_year)
+            is OrderCommand.ShowInvalidCardCvv -> cardCvvTextInput.error = getString(R.string.order_invalid_cv)
+            is OrderCommand.ShowOrderSaveError -> showOrderSaveError()
+            is OrderCommand.NotifyOrderCompleted -> notifyOrderCompleted()
+        }
+    }
 
-        viewModel.liveDataIsLoading.observe(this, Observer { isLoading ->
-            setShowProgress(isLoading)
-        })
-        viewModel.liveDataInvalidName.observe(this, Observer { event ->
-            event.performEventIfNotHandled {
-                nameTextInput.error = resources.getString(R.string.order_invalid_name)
-            }
-        })
-        viewModel.liveDataInvalidSecondName.observe(this, Observer { event ->
-            event.performEventIfNotHandled {
-                lastNameTextInput.error = resources.getString(R.string.order_invalid_last_name)
-            }
-        })
-        viewModel.liveDataInvalidCardNumber.observe(this, Observer { event ->
-            event.performEventIfNotHandled {
-                cardNumberTextInput.error = resources.getString(R.string.order_invalid_card_number)
-            }
-        })
-        viewModel.liveDataInvalidCardMonth.observe(this, Observer { event ->
-            event.performEventIfNotHandled {
-                cardMonthTextInput.error = resources.getString(R.string.order_invalid_card_month)
-            }
-        })
-        viewModel.liveDataInvalidCardYear.observe(this, Observer { event ->
-            event.performEventIfNotHandled {
-                cardYearTextInput.error = resources.getString(R.string.order_invalid_card_year)
-            }
-        })
-        viewModel.liveDataInvalidCardCvv.observe(this, Observer { event ->
-            event.performEventIfNotHandled {
-                cardCvvTextInput.error = resources.getString(R.string.order_invalid_cv)
-            }
-        })
-        viewModel.liveDataNoInternet.observe(this, Observer { event ->
-            event.performEventIfNotHandled { showNoInternetError() }
-        })
-        viewModel.liveDataOrderSaveError.observe(this, Observer { event ->
-            event.performEventIfNotHandled { showOrderSaveError() }
-        })
-        viewModel.liveDataOrderCompleted.observe(this, Observer { event ->
-            event.performEventIfNotHandled { notifyOrderCompleted() }
-        })
+    private fun updateUi(state: OrderViewState) {
+        setShowProgress(state.isLoading)
+        orderTotalPrice.text = String.format(getString(R.string.price_format), state.orderPrice)
     }
 
     private fun clearErrors() {
@@ -101,11 +80,6 @@ class OrderActivity : AppCompatActivity() {
         cardMonthTextInput.error = ""
         cardYearTextInput.error = ""
         cardCvvTextInput.error = ""
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel?.initOrderPrice()
     }
 
     private fun initActionBar() {
