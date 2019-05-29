@@ -13,7 +13,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.extensions.isNetworkAvailable
-import com.example.vshcheglov.webshop.presentation.helpres.Event
 import com.example.vshcheglov.webshop.presentation.main.MainActivity
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import kotlinx.android.synthetic.main.activity_register.*
@@ -37,7 +36,10 @@ class RegisterActivity : AppCompatActivity() {
             )
         }
 
-        initViewModelObservers()
+        viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
+        viewModel.commandLiveData.observe(this, Observer { commandEvent ->
+            commandEvent.getContentIfNotHandled()?.let { command -> performCommand(command) }
+        })
 
         setSupportActionBar(registerActionBar)
         supportActionBar?.let {
@@ -57,51 +59,32 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    private fun performCommand(command: RegisterCommand) {
+        when (command) {
+            is RegisterCommand.StartMainScreen -> startMainActivity()
+            is RegisterCommand.ShowEmailInvalid -> registerEmailTextInput.error = getString(R.string.email_error)
+            is RegisterCommand.ShowPasswordsNotMatch -> {
+                registerConfirmPasswordTextInput.error = getString(R.string.passwords_not_match)
+            }
+            is RegisterCommand.ShowPasswordInvalid -> {
+                registerPasswordTextInput.error = resources.getString(R.string.password_error)
+            }
+            is RegisterCommand.ShowConfirmPasswordInvalid -> {
+                registerConfirmPasswordTextInput.error = resources.getString(R.string.password_error)
+            }
+            is RegisterCommand.ShowNoInternet -> showNoInternetError()
+            is RegisterCommand.ShowRegisterError -> showLoginError(command.exception)
+        }
+    }
+
+    private fun updateUi(state: RegisterViewState) {
+        setShowProgress(state.isLoading)
+    }
+
     private fun clearTextInputErrors() {
         registerEmailTextInput.error = ""
         registerPasswordTextInput.error = ""
         registerConfirmPasswordTextInput.error = ""
-    }
-
-    private fun initViewModelObservers() {
-        viewModel.liveDataShowEmailInvalid.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled { registerEmailTextInput.error = getString(R.string.email_error) }
-            })
-        viewModel.liveDataShowPasswordsNotMatch.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled {
-                    registerConfirmPasswordTextInput.error = getString(R.string.passwords_not_match)
-                }
-            })
-        viewModel.liveDataShowPasswordIsInvalid.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled {
-                    registerPasswordTextInput.error = resources.getString(R.string.password_error)
-                }
-            })
-        viewModel.showConfirmPasswordInvalid.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled {
-                    registerConfirmPasswordTextInput.error = resources.getString(R.string.password_error)
-                }
-            })
-        viewModel.liveDataShowNoInternet.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled { showNoInternetError() }
-            })
-        viewModel.liveDataStartMainScreen.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled { startMainActivity() }
-            })
-        viewModel.liveDataIsLoading.observe(this,
-            Observer<Boolean> { isLoading ->
-                setShowProgress(isLoading)
-            })
-        viewModel.liveDataRegistrationError.observe(this,
-            Observer<Exception> { exception ->
-                showLoginError(exception)
-            })
     }
 
     private fun showPassword(event: MotionEvent, editText: EditText) { //TODO: Change icon when pressed
