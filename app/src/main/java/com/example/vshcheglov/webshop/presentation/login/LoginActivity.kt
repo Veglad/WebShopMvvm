@@ -34,7 +34,10 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         viewModel = ViewModelProviders.of(this).get(LoginViewModel::class.java)
-        initViewModelObservers()
+        viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
+        viewModel.commandLiveData.observe(this, Observer { commandEvent ->
+            commandEvent.getContentIfNotHandled()?.let { command -> performCommand(command) }
+        })
 
         orderButton.setOnClickListener {
             emailTextInput.error = ""
@@ -58,51 +61,23 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun initViewModelObservers() {
-        viewModel.liveDataShowEmailInvalid.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled { emailTextInput.error = getString(R.string.email_error) }
-            })
-        viewModel.liveDataShowPasswordIsInvalid.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled { passwordTextInput.error = getString(R.string.password_error) }
-            })
-        viewModel.liveDataShowNoInternet.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled { showMessage(getString(R.string.no_internet_connection_warning)) }
-            })
-        viewModel.liveDataStartMainScreen.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled { startMainActivity() }
-            })
-        viewModel.liveDataShowBiometricError.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled { showMessage(getString(R.string.biometric_error)) }
-            })
-        viewModel.liveDataShowNewBiometricEnrolled.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled { showMessage(getString(R.string.biometric_enrolled_error_text)) }
-            })
-        viewModel.liveDataHideBiometricPrompt.observe(this,
-            Observer<Event> { event ->
-                event.performEventIfNotHandled { hideBiometricPromptFeature() }
-            })
-        viewModel.liveDataIsLoading.observe(this,
-            Observer<Boolean> { isLoading ->
-                setShowProgress(isLoading)
-            })
-        viewModel.liveDataLoginError.observe(this,
-            Observer<Exception> { exception ->
-                showLoginError(exception)
-            })
-        viewModel.liveDataShowBiometricPrompt.observe(this,
-            Observer<BiometricPrompt.CryptoObject> { cryptoObject ->
-                showBiometricPrompt(cryptoObject)
-            })
-        viewModel.liveDataUserEmail.observe(this,
-            Observer<String> { email ->
-                loginEmail.setText(email, TextView.BufferType.EDITABLE)
-            })
+    private fun performCommand(command: LoginCommand) {
+        when (command) {
+            is LoginCommand.ShowEmailInvalid -> emailTextInput.error = getString(R.string.email_error)
+            is LoginCommand.ShowPasswordInvalid -> passwordTextInput.error = getString(R.string.password_error)
+            is LoginCommand.ShowNoInternet -> showMessage(getString(R.string.no_internet_connection_warning))
+            is LoginCommand.StartMainScreen -> startMainActivity()
+            is LoginCommand.ShowBiometricError -> showMessage(getString(R.string.biometric_error))
+            is LoginCommand.ShowNewBiometricEnrolled -> showMessage(getString(R.string.biometric_enrolled_error_text))
+            is LoginCommand.HideBiometricPrompt -> hideBiometricPromptFeature()
+            is LoginCommand.ShowLoginError -> showLoginError(command.exception)
+            is LoginCommand.ShowBiometricPrompt -> showBiometricPrompt(command.cryptoObject)
+        }
+    }
+
+    private fun updateUi(state: LoginViewState) {
+        setShowProgress(state.isLoading)
+        loginEmail.setText(state.userEmail, TextView.BufferType.EDITABLE)
     }
 
     private fun prepareBiometricPrompt() {
