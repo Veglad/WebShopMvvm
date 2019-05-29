@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.presentation.helpres.Event
+import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import com.shashank.sony.fancydialoglib.Animation
 import com.shashank.sony.fancydialoglib.FancyAlertDialog
 import com.shashank.sony.fancydialoglib.Icon
@@ -34,7 +35,8 @@ class PurchaseActivity : AppCompatActivity() {
         setContentView(R.layout.activity_purchase)
 
         viewModel = ViewModelProviders.of(this).get(PurchaseViewModel::class.java)
-        initViewModelObservers()
+        viewModel.stateLiveData.observe(this, Observer { state -> state?.let { updateUi(it) } })
+        viewModel.commandLiveData.observe(this, Observer { command -> performCommand(command) })
 
         setSupportActionBar(boughtToolbar)
         supportActionBar?.let {
@@ -45,27 +47,23 @@ class PurchaseActivity : AppCompatActivity() {
         messageActionLayoutButton.setOnClickListener { startMainActivity() }
     }
 
-    private fun initViewModelObservers() {
-        viewModel.liveDataIsLoading.observe(this,
-            Observer<Boolean> { isLoading ->
-                purchaseProgressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-            })
-        viewModel.liveDataProducts.observe(this,
-            Observer<List<Pair<OrderProduct, Timestamp>>> { products ->
-                showProducts(products)
-            })
-        viewModel.liveDataShowProductsLoadingError.observe(this,
-            Observer<Exception> { ex ->
-                showProductsFetchingError(ex)
-            })
-        viewModel.liveDataShowNoProducts.observe(this,
-            Observer<Event> { products ->
-                showNoData()
-            })
+    private fun updateUi(state: PurchaseViewState) {
+        purchaseProgressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+        showProducts(state.products)
+    }
 
+    private fun performCommand(commandSingleEvent: EventWithContent<PurchaseCommand>) {
+        commandSingleEvent.getContentIfNotHandled()?.let { command ->
+            when (command) {
+                is PurchaseCommand.NotifyNoProducts -> showNoData()
+                is PurchaseCommand.NotifyError -> showProductsFetchingError(command.exception)
+            }
+        }
     }
 
     private fun showProducts(productToTimeStampList: List<Pair<OrderProduct, Timestamp>>) {
+        purchaseListLayout.visibility = View.VISIBLE
+        purchaseErrorLayout.visibility = View.GONE
         boughtRecyclerAdapter = PurchaseRecyclerAdapter(this, productToTimeStampList)
         purchaseRecyclerView.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, COLUMNS_NUMBER)
         purchaseRecyclerView.adapter = boughtRecyclerAdapter
@@ -95,8 +93,8 @@ class PurchaseActivity : AppCompatActivity() {
     }
 
     private fun showNoData() {
-        purchaseListLayout.visibility = View.GONE
-        purchaseErrorLayout.visibility = View.VISIBLE
+        //purchaseListLayout.visibility = View.GONE
+        //purchaseErrorLayout.visibility = View.VISIBLE
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {

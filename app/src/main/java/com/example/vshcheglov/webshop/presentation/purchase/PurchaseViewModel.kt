@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import com.example.vshcheglov.webshop.App
 import com.example.vshcheglov.webshop.data.DataProvider
 import com.example.vshcheglov.webshop.domain.OrderProduct
+import com.example.vshcheglov.webshop.domain.Product
 import com.example.vshcheglov.webshop.presentation.helpres.Event
+import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.*
 import timber.log.Timber
@@ -20,17 +22,15 @@ class PurchaseViewModel : ViewModel() {
     private val job: Job = Job()
     private val uiCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + job)
 
-    private val _liveDataShowNoProducts = MutableLiveData<Event>()
-    val liveDataShowNoProducts: LiveData<Event> = _liveDataShowNoProducts
+    private val _stateLiveData: MutableLiveData<PurchaseViewState> = MutableLiveData<PurchaseViewState>().apply {
+        value = PurchaseViewState()
+    }
+    val stateLiveData: LiveData<PurchaseViewState> = _stateLiveData
 
-    private val _liveDataIsLoading = MutableLiveData<Boolean>()
-    val liveDataIsLoading: LiveData<Boolean> = _liveDataIsLoading
+    private val _command: MutableLiveData<EventWithContent<PurchaseCommand>> = MutableLiveData()
+    val commandLiveData: LiveData<EventWithContent<PurchaseCommand>> = _command
 
-    private val _liveDataShowProductsLoadingError = MutableLiveData<Exception>()
-    val liveDataShowProductsLoadingError: LiveData<Exception> = _liveDataShowProductsLoadingError
-
-    private val _liveDataProducts = MutableLiveData<List<Pair<OrderProduct, Timestamp>>>()
-    val liveDataProducts: LiveData<List<Pair<OrderProduct, Timestamp>>> = _liveDataProducts
+    private fun getState() = stateLiveData.value!!
 
     init {
         App.appComponent.inject(this)
@@ -40,22 +40,22 @@ class PurchaseViewModel : ViewModel() {
     fun loadPurchasedProducts() {
         uiCoroutineScope.launch {
             try {
-                _liveDataIsLoading.value = true
+                _stateLiveData.value = PurchaseViewState(isLoading = true)
                 val orderList = withContext(Dispatchers.IO) { dataProvider.getUserOrders() }
 
                 if (orderList.isNotEmpty()) {
                     val productToTimeStampList = orderList.map { order ->
                         order.orderProducts.map { Pair(it, order.timestamp) }
                     }.flatten()
-                    _liveDataProducts.value = productToTimeStampList
+                    _stateLiveData.value = getState().copy(products = productToTimeStampList)
                 } else {
-                    _liveDataShowNoProducts.value = Event()
+                    _command.value = EventWithContent(PurchaseCommand.NotifyNoProducts)
                 }
             } catch (ex: Exception) {
                 Timber.d("Getting user products error: $ex")
-                _liveDataShowProductsLoadingError.value = ex
+                _command.value = EventWithContent(PurchaseCommand.NotifyError(ex))
             } finally {
-                _liveDataIsLoading.value = false
+                _stateLiveData.value = getState().copy(isLoading = false)
             }
         }
     }
@@ -64,4 +64,14 @@ class PurchaseViewModel : ViewModel() {
         super.onCleared()
         job.cancel()
     }
+}
+
+data class PurchaseViewState(
+    var products: List<Pair<OrderProduct, Timestamp>> = listOf(),
+    var isLoading: Boolean = false
+)
+
+sealed class PurchaseCommand {
+    class NotifyError(val exception: Exception = Exception()) : PurchaseCommand()
+    object NotifyNoProducts : PurchaseCommand()
 }
