@@ -7,9 +7,8 @@ import com.example.vshcheglov.webshop.App
 import com.example.vshcheglov.webshop.domain.Basket
 import com.example.vshcheglov.webshop.domain.Product
 import com.example.vshcheglov.webshop.presentation.entites.ProductBasketCard
-import com.example.vshcheglov.webshop.presentation.entites.TotalProductPriceTitle
+import com.example.vshcheglov.webshop.presentation.entites.BasketCardPriceInfo
 import com.example.vshcheglov.webshop.presentation.entites.mappers.ProductBasketCardMapper
-import com.example.vshcheglov.webshop.presentation.helpres.Event
 import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import javax.inject.Inject
 import kotlin.properties.Delegates
@@ -21,109 +20,111 @@ class BasketViewModel : ViewModel() {
     private lateinit var productToCount: Pair<Product, Int>
     private var deletedIndex by Delegates.notNull<Int>()
 
-    interface BasketView {
-        fun setTotalProductPriceTitle(position: Int, totalPrice: Double, percentageDiscount: Double)
+    private val _stateLiveData: MutableLiveData<BasketViewState> = MutableLiveData<BasketViewState>().apply {
+        value = BasketViewState()
     }
+    val stateLiveData: LiveData<BasketViewState> = _stateLiveData
 
-    private val _liveDataBasketAmount = MutableLiveData<Double>()
-    val liveDataBasketAmount: LiveData<Double> = _liveDataBasketAmount
+    private val _commandLiveData: MutableLiveData<EventWithContent<BasketCommand>> = MutableLiveData()
+    val commandLiveData: LiveData<EventWithContent<BasketCommand>> = _commandLiveData
 
-    private val _liveDataBasketItemNumber = MutableLiveData<String>()
-    val liveDataBasketItemNumber: LiveData<String> = _liveDataBasketItemNumber
-
-    private val _liveDataBasket = MutableLiveData<MutableList<ProductBasketCard>>()
-    val liveDataBasket: LiveData<MutableList<ProductBasketCard>> = _liveDataBasket
-
-    private val _liveDataBasketIsEmpty = MutableLiveData<Boolean>()
-    val liveDataBasketIsEmpty: LiveData<Boolean> = _liveDataBasketIsEmpty
-
-    private val _liveDataSameProductNumber = MutableLiveData<Pair<Int, Int>>()
-    val liveDataSameProductNumber: LiveData<Pair<Int, Int>> = _liveDataSameProductNumber
-
-    private val _liveDataTotalProductPrice = MutableLiveData<Pair<Int, Double>>()
-    val liveDataTotalProductPrice: LiveData<Pair<Int, Double>> = _liveDataTotalProductPrice
-
-    private val _liveDataTotalProductPriceTitle = MutableLiveData<TotalProductPriceTitle>()
-    val liveDataTotalProductPriceTitle: LiveData<TotalProductPriceTitle> = _liveDataTotalProductPriceTitle
-
-    private val _liveDataStartOrderScreen = MutableLiveData<Event>()
-    val liveDataStartOrderScreen: LiveData<Event> = _liveDataStartOrderScreen
-
-    private val _liveDataRemoveItem = MutableLiveData<EventWithContent<Int>>()
-    val liveDataRemoveItem: LiveData<EventWithContent<Int>> = _liveDataRemoveItem
-
-    private val _liveDataRestoreItem = MutableLiveData<EventWithContent<Int>>()
-    val liveDataRestoreItem: LiveData<EventWithContent<Int>> = _liveDataRestoreItem
+    private fun getState() = stateLiveData.value!!
 
     init {
         App.appComponent.inject(this)
+        initProductListWithBasketInfo()
     }
 
     fun makeOrder() {
-        _liveDataStartOrderScreen.value = Event()
+        setCommand(BasketCommand.StartOrderScreen)
     }
 
-    fun initProductListWithBasketInfo() {
-        updateBasketInfo()
+    private fun initProductListWithBasketInfo() {
+        val state = getUpdatedStateWithBasketInfo()
+        state.isBasketEmpty = Basket.productsNumber == 0
 
-        val isBasketEmpty = Basket.productsNumber == 0
-        _liveDataBasketIsEmpty.value = isBasketEmpty
-        if (!isBasketEmpty) {
-            _liveDataBasket.value = productBasketCardMapper.map(Basket)
+        if (!state.isBasketEmpty) {
+            val basketCardList = productBasketCardMapper.map(Basket)
+            setCommand(BasketCommand.ShowBasketCardList(basketCardList))
         }
+
+        _stateLiveData.value = state
     }
 
     fun productNumberIncreased(position: Int) {
         Basket.incrementProductCount(position)
-        cardAndBasketUpdate(position)
+        _stateLiveData.value = getUpdatedStateWithBasketInfo()
+        updateBasketCardPriceInfo(position, Basket.productToCountList[position])
     }
 
     fun productNumberDecreased(position: Int) {
         if (Basket.decrementProductCountIfAble(position)) {
-            cardAndBasketUpdate(position)
+            _stateLiveData.value = getUpdatedStateWithBasketInfo()
+            updateBasketCardPriceInfo(position, Basket.productToCountList[position])
         }
     }
 
-    private fun cardAndBasketUpdate(position: Int) {
-        val updatedProductToCount = Basket.productToCountList[position]
+    // TODO: Refactor
+    private fun updateBasketCardPriceInfo(position: Int, updatedProductToCount: Pair<Product, Int>) {
         val productCount = updatedProductToCount.second
         val product = updatedProductToCount.first
 
-        updateBasketInfo()
+        val basketCardPriceInfo = BasketCardPriceInfo(
+            position,
+            Basket.getSameProductPrice(product.id),
+            product.percentageDiscount.toDouble(),
+            productCount,
+            Basket.getSameProductDiscountPrice(product.id)
+        )
 
-        _liveDataSameProductNumber.value = position to productCount
-        _liveDataTotalProductPrice.value = position to Basket.getSameProductDiscountPrice(product.id)
-        if (product.percentageDiscount > 0) {
-            _liveDataTotalProductPriceTitle.value = TotalProductPriceTitle(
-                position,
-                Basket.getSameProductPrice(product.id),
-                product.percentageDiscount.toDouble()
-            )
-        }
+        setCommand(BasketCommand.UpdateBasketCardPriceInfo(basketCardPriceInfo))
     }
 
 
-    private fun updateBasketInfo() {
-        _liveDataBasketAmount.value = Basket.totalPriceWithDiscount
-        _liveDataBasketItemNumber.value = Basket.productsNumber.toString()
-    }
+    private fun getUpdatedStateWithBasketInfo() = getState().copy(
+        basketAmount = Basket.totalPriceWithDiscount,
+        basketItemNumber = Basket.productsNumber
+    )
 
+    // Pass deleted card item as a parameter, restore it as event with Pair<position, data>
     fun removeProductFromBasket(position: Int) {
-        productToCount = Basket.productToCountList[position]
-        deletedIndex = position
+        productToCount = Basket.productToCountList[position] // TODO: Refactor
+        deletedIndex = position // TODO: Refactor
 
         Basket.removeSameProducts(position)
 
-        _liveDataRemoveItem.value = EventWithContent(position)
-        _liveDataBasketIsEmpty.value = Basket.productsNumber == 0
+        setCommand(BasketCommand.RemoveBasketCard(position))
 
-        updateBasketInfo()
+        _stateLiveData.value = getUpdatedStateWithBasketInfo().also { state ->
+            state.isBasketEmpty = Basket.productsNumber == 0
+        }
     }
 
     fun restoreProductCard() {
         Basket.addProductToCountEntry(productToCount, deletedIndex)
-        _liveDataBasketIsEmpty.value = Basket.productsNumber == 0
-        _liveDataRestoreItem.value = EventWithContent(deletedIndex)
-        updateBasketInfo()
+
+        _stateLiveData.value = getUpdatedStateWithBasketInfo().also { state ->
+            state.isBasketEmpty = Basket.productsNumber == 0
+        }
+
+        setCommand(BasketCommand.RestoreBasketCard(deletedIndex))
     }
+
+    private fun setCommand(command: BasketCommand) {
+        _commandLiveData.value = EventWithContent(command)
+    }
+}
+
+data class BasketViewState(
+    var basketAmount: Double = 0.0,
+    var basketItemNumber: Int = 0,
+    var isBasketEmpty: Boolean = true
+)
+
+sealed class BasketCommand {
+    class RemoveBasketCard(val position: Int) : BasketCommand()
+    class RestoreBasketCard(val position: Int) : BasketCommand()
+    class UpdateBasketCardPriceInfo(val basketCardPriceInfo: BasketCardPriceInfo) : BasketCommand()
+    class ShowBasketCardList(val basketCards: MutableList<ProductBasketCard>) : BasketCommand()
+    object StartOrderScreen : BasketCommand()
 }

@@ -9,11 +9,13 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.presentation.basket.adapter.BasketRecyclerAdapter
 import com.example.vshcheglov.webshop.presentation.basket.adapter.BasketRecyclerItemTouchHelper
 import com.example.vshcheglov.webshop.presentation.entites.ProductBasketCard
-import com.example.vshcheglov.webshop.presentation.entites.TotalProductPriceTitle
+import com.example.vshcheglov.webshop.presentation.entites.BasketCardPriceInfo
 import com.example.vshcheglov.webshop.presentation.main.MainActivity
 import com.example.vshcheglov.webshop.presentation.order.OrderActivity
 import kotlinx.android.synthetic.main.activity_basket.*
@@ -30,38 +32,47 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
         setContentView(R.layout.activity_basket)
 
         viewModel = ViewModelProviders.of(this).get(BasketViewModel::class.java)
-        initViewModelObservers()
 
+        viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
+        viewModel.commandLiveData.observe(this, Observer { commandEvent ->
+            commandEvent.getContentIfNotHandled()?.let { command ->
+                performCommand(command)
+            }
+        })
+
+        initRecyclerView()
         initActionBar()
         initEmptyBasketLayout()
         basketMakeOrderButton.setOnClickListener { viewModel?.makeOrder() }
     }
 
-    private fun initViewModelObservers() {
-        viewModel.liveDataBasketAmount.observe(this, Observer { basketAmount -> setBasketAmount(basketAmount) })
-        viewModel.liveDataBasketItemNumber.observe(
-            this,
-            Observer { basketItemNumber -> basketItemsTextView.text = basketItemNumber })
-        viewModel.liveDataBasket.observe(this, Observer { basket -> showBasket(basket) })
-        viewModel.liveDataBasketIsEmpty.observe(this, Observer { isEmpty -> setBasketIsEmptyWarning(isEmpty) })
-        viewModel.liveDataSameProductNumber.observe(this, Observer { sameProductNumber ->
-            setSameProductsNumber(sameProductNumber.first, sameProductNumber.second)
-        })
-        viewModel.liveDataTotalProductPrice.observe(this, Observer { totalProductPrice ->
-            setTotalProductPrice(totalProductPrice.first, totalProductPrice.second)
-        })
-        viewModel.liveDataTotalProductPriceTitle.observe(this, Observer { totalProductPriceTitle ->
-            setTotalProductPriceTitle(totalProductPriceTitle)
-        })
-        viewModel.liveDataStartOrderScreen.observe(this, Observer { startOrderScreenEvent ->
-            startOrderScreenEvent.performEventIfNotHandled { startOrderActivity() }
-        })
-        viewModel.liveDataRemoveItem.observe(this, Observer { removeItem ->
-            removeItem.getContentIfNotHandled()?.let { position -> removeProductCard(position) }
-        })
-        viewModel.liveDataRestoreItem.observe(this, Observer { restoreItem ->
-            restoreItem.getContentIfNotHandled()?.let { position -> restoreSameProductsCard(position) }
-        })
+    private fun updateUi(state: BasketViewState) {
+        setBasketIsEmptyWarning(state.isBasketEmpty)
+        if (!state.isBasketEmpty) {
+            setBasketAmount(state.basketAmount)
+            setBasketItemsNumber(state.basketItemNumber)
+        }
+    }
+
+    private fun setBasketItemsNumber(basketItemNumber: Int) {
+        basketItemsTextView.text = basketItemNumber.toString()
+    }
+
+    private fun performCommand(command: BasketCommand) {
+        when (command) {
+            is BasketCommand.StartOrderScreen -> startOrderActivity()
+            is BasketCommand.RemoveBasketCard -> removeBasketCard(command.position)
+            is BasketCommand.RestoreBasketCard -> restoreBasketCard(command.position)
+            is BasketCommand.UpdateBasketCardPriceInfo -> updateBasketCardPriceInfo(command.basketCardPriceInfo)
+            is BasketCommand.ShowBasketCardList -> basketAdapter.updateBasketCardList(command.basketCards)
+        }
+    }
+
+    private fun updateBasketCardPriceInfo(basketCardPriceInfo: BasketCardPriceInfo) {
+        val view = basketRecyclerView.layoutManager?.findViewByPosition(basketCardPriceInfo.position)
+        view?.let {
+            basketAdapter.updateBasketCardPriceInfo(basketCardPriceInfo, view)
+        }
     }
 
     private fun initEmptyBasketLayout() {
@@ -75,15 +86,15 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
         }
     }
 
-    private fun showBasket(productBaseketCardList: MutableList<ProductBasketCard>) {
+    private fun initRecyclerView() {
         with(basketRecyclerView) {
-            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this@BasketActivity)
-            basketAdapter = BasketRecyclerAdapter(productBaseketCardList).also {
+            layoutManager = LinearLayoutManager(this@BasketActivity)
+            basketAdapter = BasketRecyclerAdapter(mutableListOf()).also {
                 it.onProductNumberIncreasedListener = { position -> viewModel?.productNumberIncreased(position) }
                 it.onProductNumberDecreasedListener = { position -> viewModel?.productNumberDecreased(position) }
             }
             adapter = basketAdapter
-            itemAnimator = androidx.recyclerview.widget.DefaultItemAnimator()
+            itemAnimator = DefaultItemAnimator()
             val itemTouchSimpleCallback =
                 BasketRecyclerItemTouchHelper(
                     0,
@@ -140,7 +151,7 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
         basketMakeOrderButton.isEnabled = !isEmpty
     }
 
-    private fun removeProductCard(position: Int) {
+    private fun removeBasketCard(position: Int) {
         basketAdapter.removeItem(position)
         val undoTitle = getString(R.string.removed_item_snackbar)
         val snackBar = Snackbar.make(basketCoordinatorLayout, undoTitle, Snackbar.LENGTH_SHORT)
@@ -148,32 +159,7 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
         snackBar.show()
     }
 
-    private fun restoreSameProductsCard(deletedIndex: Int) {
+    private fun restoreBasketCard(deletedIndex: Int) {
         basketAdapter.restoreItem(deletedIndex)
-    }
-
-    private fun setSameProductsNumber(position: Int, number: Int) {
-        val view = basketRecyclerView.layoutManager?.findViewByPosition(position)
-        view?.let { basketAdapter.setProductsNumberByPosition(it, number, position) }
-    }
-
-    private fun setTotalProductPrice(position: Int, totalDiscountPrice: Double) {
-        val view = basketRecyclerView.layoutManager?.findViewByPosition(position)
-        view?.let { basketAdapter.updateCardTotalPrice(position, totalDiscountPrice, view) }
-    }
-
-    private fun setTotalProductPriceTitle(totalProductPriceTitle: TotalProductPriceTitle) {
-        val view = basketRecyclerView.layoutManager?.findViewByPosition(totalProductPriceTitle.position)
-        view?.let {
-            basketAdapter.updateCardTotalPriceTitle(
-                totalProductPriceTitle.position,
-                totalProductPriceTitle.totalPrice, view, totalProductPriceTitle.percentageDiscount
-            )
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel?.initProductListWithBasketInfo()
     }
 }

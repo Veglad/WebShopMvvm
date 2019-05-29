@@ -1,13 +1,12 @@
 package com.example.vshcheglov.webshop.presentation.basket.adapter
 
-import android.content.Context
 import android.graphics.Paint
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import com.example.vshcheglov.webshop.R
+import com.example.vshcheglov.webshop.presentation.entites.BasketCardPriceInfo
 import com.example.vshcheglov.webshop.presentation.entites.ProductBasketCard
 import kotlinx.android.synthetic.main.basket_recycler_item.view.*
 
@@ -53,8 +52,7 @@ class BasketRecyclerAdapter(private val cardProductList: MutableList<ProductBask
 
             initSaleTitle(view, this)
             initProductPrice(view, this)
-            initTotalProductsPrice(view, totalPriceDiscount)
-            initTotalProductsPriceTitle(view, totalPrice, percentageDiscount)
+            initTotalProductsPrice(view, totalPrice, percentageDiscount, totalPriceDiscount)
         }
     }
 
@@ -80,16 +78,19 @@ class BasketRecyclerAdapter(private val cardProductList: MutableList<ProductBask
         }
     }
 
-    fun initTotalProductsPriceTitle(view: View, totalPrice: Double, percentageDiscount: Double) {
+    private fun initTotalProductsPrice(
+        view: View,
+        totalPrice: Double,
+        percentageDiscount: Double,
+        totalDiscountPrice: Double
+    ) {
         if (percentageDiscount > 0) {
             view.basketTotalPriceTitle.also {
                 it.text = String.format(view.context.getString(R.string.price_format), totalPrice)
                 it.paintFlags = it.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
             }
         }
-    }
 
-    fun initTotalProductsPrice(view: View, totalDiscountPrice: Double) {
         view.basketTotalPrice.text =
             String.format(view.context.getString(R.string.price_format), totalDiscountPrice)
     }
@@ -104,19 +105,20 @@ class BasketRecyclerAdapter(private val cardProductList: MutableList<ProductBask
         notifyItemInserted(position)
     }
 
-    fun setProductsNumberByPosition(view: View, productsNumber: Int, position: Int) {
-        cardProductList[position].productsNumber = productsNumber
-        view.productBasketCountTextView.text = productsNumber.toString()
+    fun updateBasketCardPriceInfo(basketCardPriceInfo: BasketCardPriceInfo, view: View) {
+        with(basketCardPriceInfo) {
+            cardProductList[position].totalPrice = totalPrice
+            cardProductList[position].totalPriceDiscount = totalDiscountPrice
+            cardProductList[position].productsNumber = productCount
+
+            view.productBasketCountTextView.text = productCount.toString()
+            initTotalProductsPrice(view, totalPrice, percentageDiscount, totalDiscountPrice)
+        }
     }
 
-    fun updateCardTotalPrice(position: Int, totalPriceDiscount: Double, view: View) {
-        cardProductList[position].totalPriceDiscount = totalPriceDiscount
-        initTotalProductsPrice(view, totalPriceDiscount)
-    }
-
-    fun updateCardTotalPriceTitle(position: Int, totalPrice: Double, view: View, percentageDiscount: Double) {
-        cardProductList[position].totalPrice = totalPrice
-        initTotalProductsPriceTitle(view, totalPrice, percentageDiscount)
+    fun updateBasketCardList(basketCardList: MutableList<ProductBasketCard>) {
+        cardProductList.clear()
+        cardProductList.addAll(basketCardList)
     }
 
     class ViewHolder(val view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view)
