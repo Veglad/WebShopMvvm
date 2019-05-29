@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.purchase_list_layout.*
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.example.vshcheglov.webshop.presentation.helpers.Router
 import com.example.vshcheglov.webshop.presentation.helpres.Event
 import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import com.shashank.sony.fancydialoglib.Animation
@@ -44,7 +45,7 @@ class PurchaseActivity : AppCompatActivity() {
             it.setTitle(R.string.bought_products)
         }
 
-        messageActionLayoutButton.setOnClickListener { startMainActivity() }
+        messageActionLayoutButton.setOnClickListener { Router.navigateToMainActivity(this) }
     }
 
     private fun updateUi(state: PurchaseViewState) {
@@ -81,15 +82,9 @@ class PurchaseActivity : AppCompatActivity() {
             .setAnimation(Animation.POP)
             .isCancellable(true)
             .setIcon(R.drawable.ic_close_white_24dp, Icon.Visible)
-            .OnPositiveClicked { startMainActivity() }
-            .OnNegativeClicked { startMainActivity() }
+            .OnPositiveClicked { Router.navigateToMainActivity(this) }
+            .OnNegativeClicked { Router.navigateToMainActivity(this) }
             .build()
-    }
-
-    private fun startMainActivity() {
-        startActivity(Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-        })
     }
 
     private fun showNoData() {

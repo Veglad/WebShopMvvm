@@ -16,6 +16,7 @@ import com.example.vshcheglov.webshop.presentation.basket.adapter.BasketRecycler
 import com.example.vshcheglov.webshop.presentation.basket.adapter.BasketRecyclerItemTouchHelper
 import com.example.vshcheglov.webshop.presentation.entites.ProductBasketCard
 import com.example.vshcheglov.webshop.presentation.entites.BasketCardPriceInfo
+import com.example.vshcheglov.webshop.presentation.helpers.Router
 import com.example.vshcheglov.webshop.presentation.main.MainActivity
 import com.example.vshcheglov.webshop.presentation.order.OrderActivity
 import kotlinx.android.synthetic.main.activity_basket.*
@@ -60,7 +61,7 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
 
     private fun performCommand(command: BasketCommand) {
         when (command) {
-            is BasketCommand.StartOrderScreen -> startOrderActivity()
+            is BasketCommand.StartOrderScreen -> Router.navigateToOrderActivity(this)
             is BasketCommand.RemoveBasketCard -> removeBasketCard(command.position)
             is BasketCommand.RestoreBasketCard -> restoreBasketCard(command.position)
             is BasketCommand.UpdateBasketCardPriceInfo -> updateBasketCardPriceInfo(command.basketCardPriceInfo)
@@ -79,11 +80,7 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
         messageActionLayoutTitle.text = getString(R.string.basket_empty_title)
         messageActionLayoutText.text = getString(R.string.basket_empty_text)
         messageActionLayoutButton.text = getString(R.string.basket_empty_button_text)
-        messageActionLayoutButton.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java).also {
-                it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-            })
-        }
+        messageActionLayoutButton.setOnClickListener { Router.navigateToMainActivity(this) }
     }
 
     private fun initRecyclerView() {
@@ -126,11 +123,6 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
             android.R.id.home -> finish()
         }
         return true
-    }
-
-    private fun startOrderActivity() {
-        val intent = Intent(this, OrderActivity::class.java)
-        startActivity(intent)
     }
 
     private fun setBasketAmount(amount: Double) {

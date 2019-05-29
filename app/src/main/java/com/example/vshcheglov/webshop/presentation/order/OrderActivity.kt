@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.extensions.isNetworkAvailable
 import com.example.vshcheglov.webshop.presentation.entites.OrderCard
+import com.example.vshcheglov.webshop.presentation.helpers.Router
 import com.example.vshcheglov.webshop.presentation.main.MainActivity
 import com.shashank.sony.fancydialoglib.Animation
 import com.shashank.sony.fancydialoglib.FancyAlertDialog
@@ -131,8 +132,8 @@ class OrderActivity : AppCompatActivity() {
             .setAnimation(Animation.POP)
             .isCancellable(true)
             .setIcon(R.drawable.ic_done_white_24dp, Icon.Visible)
-            .OnPositiveClicked { startMainScreen() }
-            .OnNegativeClicked { startMainScreen() }
+            .OnPositiveClicked { Router.navigateToMainActivity(this) }
+            .OnNegativeClicked { Router.navigateToMainActivity(this) }
             .build()
     }
 
@@ -149,11 +150,5 @@ class OrderActivity : AppCompatActivity() {
             .isCancellable(true)
             .setIcon(R.drawable.ic_close_white_24dp, Icon.Visible)
             .build()
-    }
-
-    private fun startMainScreen() {
-        startActivity(Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-        })
     }
 }

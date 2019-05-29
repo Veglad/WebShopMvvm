@@ -44,6 +44,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.vshcheglov.webshop.BuildConfig
+import com.example.vshcheglov.webshop.presentation.helpers.Router
 import com.example.vshcheglov.webshop.presentation.helpres.Event
 import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import java.io.File
@@ -126,7 +127,7 @@ class MainActivity : AppCompatActivity() {
         when (command) {
             is MainCommand.ShowError -> showError(command.exception)
             is MainCommand.ShowNoInternet -> showNoInternetWarning()
-            is MainCommand.StartLoginScreen -> startLoginActivity()
+            is MainCommand.StartLoginScreen -> Router.navigateToLoginActivity(this)
         }
     }
 
@@ -145,15 +146,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun onBuyClicked(product: Product) {
         viewModel.buyProduct(product)
-        startBasketActivity()
+        Router.navigateToBasketActivity(this)
     }
 
     private fun initNavigationDrawer() {
         mainNavigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_main_log_out -> viewModel.logOut()
-                R.id.nav_main_basket -> startBasketActivity()
-                R.id.nav_main_bought -> startActivity(Intent(this, PurchaseActivity::class.java))
+                R.id.nav_main_basket -> Router.navigateToBasketActivity(this)
+                R.id.nav_main_bought -> Router.navigateToPurchaseActivity(this)
             }
 
             mainDrawerLayout.closeDrawers()
@@ -364,10 +365,6 @@ class MainActivity : AppCompatActivity() {
         mainSearchEmptyTextView.text = resources.getString(R.string.no_search_result)
     }
 
-    private fun startLoginActivity() {
-        startActivity(Intent(this, LoginActivity::class.java))
-    }
-
     private fun setErrorVisibility(isVisible: Boolean) {
         if (isVisible) {
             showLayout(MainLayouts.ERROR)
@@ -386,15 +383,11 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.actionBasket -> {
-                startBasketActivity()
+                Router.navigateToBasketActivity(this)
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    private fun startBasketActivity() {
-        startActivity(Intent(this, BasketActivity::class.java))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

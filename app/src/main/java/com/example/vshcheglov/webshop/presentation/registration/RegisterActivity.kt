@@ -1,6 +1,5 @@
 package com.example.vshcheglov.webshop.presentation.registration
 
-import android.content.Intent
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import android.text.InputType
@@ -13,7 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.extensions.isNetworkAvailable
-import com.example.vshcheglov.webshop.presentation.main.MainActivity
+import com.example.vshcheglov.webshop.presentation.helpers.Router
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import kotlinx.android.synthetic.main.activity_register.*
 import java.lang.Exception
@@ -61,7 +60,7 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun performCommand(command: RegisterCommand) {
         when (command) {
-            is RegisterCommand.StartMainScreen -> startMainActivity()
+            is RegisterCommand.StartMainScreen -> Router.navigateToMainActivity(this)
             is RegisterCommand.ShowEmailInvalid -> registerEmailTextInput.error = getString(R.string.email_error)
             is RegisterCommand.ShowPasswordsNotMatch -> {
                 registerConfirmPasswordTextInput.error = getString(R.string.passwords_not_match)
@@ -93,12 +92,6 @@ class RegisterActivity : AppCompatActivity() {
             MotionEvent.ACTION_UP -> editText.inputType =
                 InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
         }
-    }
-
-    private fun startMainActivity() {
-        startActivity(Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-        })
     }
 
     private fun showLoginError(exception: Exception?) {

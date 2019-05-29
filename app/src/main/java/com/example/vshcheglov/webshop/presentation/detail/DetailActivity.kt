@@ -11,6 +11,7 @@ import com.bumptech.glide.Glide
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.Product
 import com.example.vshcheglov.webshop.presentation.basket.BasketActivity
+import com.example.vshcheglov.webshop.presentation.helpers.Router
 import kotlinx.android.synthetic.main.activity_detail.*
 
 
@@ -70,13 +71,8 @@ class DetailActivity : AppCompatActivity() {
 
     private fun performCommand(command: DetailCommand) {
         when (command) {
-            is DetailCommand.StartBasketScreen -> startBasketActivity()
+            is DetailCommand.StartBasketScreen -> Router.navigateToBasketActivity(this)
         }
-    }
-
-    private fun startBasketActivity() {
-        val intent = Intent(this, BasketActivity::class.java)
-        startActivity(intent)
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {

@@ -15,6 +15,7 @@ import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.extensions.canUseFingerprint
 import com.example.vshcheglov.webshop.extensions.getFingerprintSensorState
 import com.example.vshcheglov.webshop.extensions.isNetworkAvailable
+import com.example.vshcheglov.webshop.presentation.helpers.Router
 import com.example.vshcheglov.webshop.presentation.helpres.Event
 import com.example.vshcheglov.webshop.presentation.helpres.FingerprintState
 import com.example.vshcheglov.webshop.presentation.helpres.MainThreadExecutor
@@ -48,7 +49,7 @@ class LoginActivity : AppCompatActivity() {
             )
         }
 
-        buttonRegister.setOnClickListener { startRegisterActivity() }
+        buttonRegister.setOnClickListener { Router.navigateToRegisterActivity(this) }
         useFingerprintButton.setOnClickListener { prepareBiometricPrompt() }
         showPasswordButton.setOnTouchListener { _, event ->
             when (event.action) {
@@ -66,7 +67,7 @@ class LoginActivity : AppCompatActivity() {
             is LoginCommand.ShowEmailInvalid -> emailTextInput.error = getString(R.string.email_error)
             is LoginCommand.ShowPasswordInvalid -> passwordTextInput.error = getString(R.string.password_error)
             is LoginCommand.ShowNoInternet -> showMessage(getString(R.string.no_internet_connection_warning))
-            is LoginCommand.StartMainScreen -> startMainActivity()
+            is LoginCommand.StartMainScreen -> Router.navigateToMainActivity(this)
             is LoginCommand.ShowBiometricError -> showMessage(getString(R.string.biometric_error))
             is LoginCommand.ShowNewBiometricEnrolled -> showMessage(getString(R.string.biometric_enrolled_error_text))
             is LoginCommand.HideBiometricPrompt -> hideBiometricPromptFeature()
@@ -110,12 +111,6 @@ class LoginActivity : AppCompatActivity() {
         biometricPrompt.authenticate(promptInfo, cryptoObject)
     }
 
-    private fun startMainActivity() {
-        startActivity(Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-        })
-    }
-
     private fun showLoginError(exception: Exception) {
         val errorMessage = when (exception) {
             is FirebaseAuthInvalidUserException -> {
@@ -129,12 +124,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
         showMessage(errorMessage)
-    }
-
-    private fun startRegisterActivity() {
-        Intent(this, RegisterActivity::class.java).apply {
-            startActivity(this)
-        }
     }
 
     private fun showMessage(message: String) {
