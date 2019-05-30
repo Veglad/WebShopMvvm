@@ -1,6 +1,5 @@
 package com.example.vshcheglov.webshop.presentation.detail
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -10,7 +9,6 @@ import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.Product
-import com.example.vshcheglov.webshop.presentation.basket.BasketActivity
 import com.example.vshcheglov.webshop.presentation.helpers.Router
 import kotlinx.android.synthetic.main.activity_detail.*
 
@@ -72,7 +70,7 @@ class DetailActivity : AppCompatActivity() {
 
     private fun performCommand(command: DetailCommand) {
         when (command) {
-            is DetailCommand.StartBasketScreen -> Router.navigateToBasketActivity(this)
+            is DetailCommand.StartBasketScreen -> Router.showBasket(this)
         }
     }
 

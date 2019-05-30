@@ -1,6 +1,5 @@
 package com.example.vshcheglov.webshop.presentation.login
 
-import android.content.Intent
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import android.text.InputType
@@ -16,11 +15,8 @@ import com.example.vshcheglov.webshop.extensions.canUseFingerprint
 import com.example.vshcheglov.webshop.extensions.getFingerprintSensorState
 import com.example.vshcheglov.webshop.extensions.isNetworkAvailable
 import com.example.vshcheglov.webshop.presentation.helpers.Router
-import com.example.vshcheglov.webshop.presentation.helpres.Event
 import com.example.vshcheglov.webshop.presentation.helpres.FingerprintState
 import com.example.vshcheglov.webshop.presentation.helpres.MainThreadExecutor
-import com.example.vshcheglov.webshop.presentation.main.MainActivity
-import com.example.vshcheglov.webshop.presentation.registration.RegisterActivity
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import kotlinx.android.synthetic.main.activity_login.*
@@ -50,7 +46,7 @@ class LoginActivity : AppCompatActivity() {
             )
         }
 
-        buttonRegister.setOnClickListener { Router.navigateToRegisterActivity(this) }
+        buttonRegister.setOnClickListener { Router.showRegister(this) }
         useFingerprintButton.setOnClickListener { prepareBiometricPrompt() }
         showPasswordButton.setOnTouchListener { _, event ->
             when (event.action) {
@@ -68,7 +64,7 @@ class LoginActivity : AppCompatActivity() {
             is LoginCommand.ShowEmailInvalid -> emailTextInput.error = getString(R.string.email_error)
             is LoginCommand.ShowPasswordInvalid -> passwordTextInput.error = getString(R.string.password_error)
             is LoginCommand.ShowNoInternet -> showMessage(getString(R.string.no_internet_connection_warning))
-            is LoginCommand.StartMainScreen -> Router.navigateToMainActivity(this)
+            is LoginCommand.StartMainScreen -> Router.showMain(this)
             is LoginCommand.ShowBiometricError -> showMessage(getString(R.string.biometric_error))
             is LoginCommand.ShowNewBiometricEnrolled -> showMessage(getString(R.string.biometric_enrolled_error_text))
             is LoginCommand.HideBiometricPrompt -> hideBiometricPromptFeature()

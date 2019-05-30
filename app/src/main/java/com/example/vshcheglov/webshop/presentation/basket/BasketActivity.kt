@@ -1,6 +1,5 @@
 package com.example.vshcheglov.webshop.presentation.basket
 
-import android.content.Intent
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -14,11 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.presentation.basket.adapter.BasketRecyclerAdapter
 import com.example.vshcheglov.webshop.presentation.basket.adapter.BasketRecyclerItemTouchHelper
-import com.example.vshcheglov.webshop.presentation.entites.ProductBasketCard
 import com.example.vshcheglov.webshop.presentation.entites.BasketCardPriceInfo
 import com.example.vshcheglov.webshop.presentation.helpers.Router
-import com.example.vshcheglov.webshop.presentation.main.MainActivity
-import com.example.vshcheglov.webshop.presentation.order.OrderActivity
 import kotlinx.android.synthetic.main.activity_basket.*
 import kotlinx.android.synthetic.main.activity_basket_list_layout.*
 import kotlinx.android.synthetic.main.message_with_action_layout.*
@@ -61,7 +57,7 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
 
     private fun performCommand(command: BasketCommand) {
         when (command) {
-            is BasketCommand.StartOrderScreen -> Router.navigateToOrderActivity(this)
+            is BasketCommand.StartOrderScreen -> Router.showOrder(this)
             is BasketCommand.RemoveBasketCard -> removeBasketCard(command.position)
             is BasketCommand.RestoreBasketCard -> restoreBasketCard(command.position)
             is BasketCommand.UpdateBasketCardPriceInfo -> updateBasketCardPriceInfo(command.basketCardPriceInfo)
@@ -80,7 +76,7 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
         messageActionLayoutTitle.text = getString(R.string.basket_empty_title)
         messageActionLayoutText.text = getString(R.string.basket_empty_text)
         messageActionLayoutButton.text = getString(R.string.basket_empty_button_text)
-        messageActionLayoutButton.setOnClickListener { Router.navigateToMainActivity(this) }
+        messageActionLayoutButton.setOnClickListener { Router.showMain(this) }
     }
 
     private fun initRecyclerView() {

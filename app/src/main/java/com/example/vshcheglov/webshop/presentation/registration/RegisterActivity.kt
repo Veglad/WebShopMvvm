@@ -60,7 +60,7 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun performCommand(command: RegisterCommand) {
         when (command) {
-            is RegisterCommand.StartMainScreen -> Router.navigateToMainActivity(this)
+            is RegisterCommand.StartMainScreen -> Router.showMain(this)
             is RegisterCommand.ShowEmailInvalid -> registerEmailTextInput.error = getString(R.string.email_error)
             is RegisterCommand.ShowPasswordsNotMatch -> {
                 registerConfirmPasswordTextInput.error = getString(R.string.passwords_not_match)

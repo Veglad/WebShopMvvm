@@ -1,6 +1,5 @@
 package com.example.vshcheglov.webshop.presentation.order
 
-import android.content.Intent
 import android.graphics.PorterDuff
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
@@ -13,7 +12,6 @@ import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.extensions.isNetworkAvailable
 import com.example.vshcheglov.webshop.presentation.entites.OrderCard
 import com.example.vshcheglov.webshop.presentation.helpers.Router
-import com.example.vshcheglov.webshop.presentation.main.MainActivity
 import com.shashank.sony.fancydialoglib.Animation
 import com.shashank.sony.fancydialoglib.FancyAlertDialog
 import com.shashank.sony.fancydialoglib.Icon
@@ -134,8 +132,8 @@ class OrderActivity : AppCompatActivity() {
             .setAnimation(Animation.POP)
             .isCancellable(true)
             .setIcon(R.drawable.ic_done_white_24dp, Icon.Visible)
-            .OnPositiveClicked { Router.navigateToMainActivity(this) }
-            .OnNegativeClicked { Router.navigateToMainActivity(this) }
+            .OnPositiveClicked { Router.showMain(this) }
+            .OnNegativeClicked { Router.showMain(this) }
             .build()
     }
 

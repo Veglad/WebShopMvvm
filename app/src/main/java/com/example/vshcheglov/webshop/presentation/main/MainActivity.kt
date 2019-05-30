@@ -17,9 +17,6 @@ import android.widget.TextView
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.Product
 import com.example.vshcheglov.webshop.extensions.isNetworkAvailable
-import com.example.vshcheglov.webshop.presentation.basket.BasketActivity
-import com.example.vshcheglov.webshop.presentation.purchase.PurchaseActivity
-import com.example.vshcheglov.webshop.presentation.login.LoginActivity
 import com.example.vshcheglov.webshop.presentation.main.adapters.ProductsRecyclerAdapter
 import com.example.vshcheglov.webshop.presentation.main.adapters.SearchRecyclerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
@@ -45,8 +42,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.vshcheglov.webshop.BuildConfig
 import com.example.vshcheglov.webshop.presentation.helpers.Router
-import com.example.vshcheglov.webshop.presentation.helpres.Event
-import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -128,7 +123,7 @@ class MainActivity : AppCompatActivity() {
         when (command) {
             is MainCommand.ShowError -> showError(command.exception)
             is MainCommand.ShowNoInternet -> showNoInternetWarning()
-            is MainCommand.StartLoginScreen -> Router.navigateToLoginActivity(this)
+            is MainCommand.StartLoginScreen -> Router.showLogin(this)
         }
     }
 
@@ -147,15 +142,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun onBuyClicked(product: Product) {
         viewModel.buyProduct(product)
-        Router.navigateToBasketActivity(this)
+        Router.showBasket(this)
     }
 
     private fun initNavigationDrawer() {
         mainNavigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_main_log_out -> viewModel.logOut()
-                R.id.nav_main_basket -> Router.navigateToBasketActivity(this)
-                R.id.nav_main_bought -> Router.navigateToPurchaseActivity(this)
+                R.id.nav_main_basket -> Router.showBasket(this)
+                R.id.nav_main_bought -> Router.showPurchase(this)
             }
 
             mainDrawerLayout.closeDrawers()
@@ -384,7 +379,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.actionBasket -> {
-                Router.navigateToBasketActivity(this)
+                Router.showBasket(this)
                 true
             }
             else -> super.onOptionsItemSelected(item)

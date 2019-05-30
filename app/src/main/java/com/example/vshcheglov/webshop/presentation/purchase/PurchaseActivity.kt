@@ -1,13 +1,11 @@
 package com.example.vshcheglov.webshop.presentation.purchase
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.OrderProduct
-import com.example.vshcheglov.webshop.presentation.main.MainActivity
 import com.google.firebase.Timestamp
 import kotlinx.android.synthetic.main.activity_purchase.*
 import kotlinx.android.synthetic.main.message_with_action_layout.*
@@ -16,7 +14,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.presentation.helpers.Router
-import com.example.vshcheglov.webshop.presentation.helpres.Event
 import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import com.shashank.sony.fancydialoglib.Animation
 import com.shashank.sony.fancydialoglib.FancyAlertDialog
@@ -46,7 +43,7 @@ class PurchaseActivity : AppCompatActivity() {
             it.setTitle(R.string.bought_products)
         }
 
-        messageActionLayoutButton.setOnClickListener { Router.navigateToMainActivity(this) }
+        messageActionLayoutButton.setOnClickListener { Router.showMain(this) }
     }
 
     private fun updateUi(state: PurchaseViewState) {
@@ -88,8 +85,8 @@ class PurchaseActivity : AppCompatActivity() {
             .setAnimation(Animation.POP)
             .isCancellable(true)
             .setIcon(R.drawable.ic_close_white_24dp, Icon.Visible)
-            .OnPositiveClicked { Router.navigateToMainActivity(this) }
-            .OnNegativeClicked { Router.navigateToMainActivity(this) }
+            .OnPositiveClicked { Router.showMain(this) }
+            .OnNegativeClicked { Router.showMain(this) }
             .build()
     }
 
