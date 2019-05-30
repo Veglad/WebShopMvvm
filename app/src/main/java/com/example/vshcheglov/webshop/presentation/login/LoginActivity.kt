@@ -37,6 +37,8 @@ class LoginActivity : AppCompatActivity() {
             commandEvent.getContentIfNotHandled()?.let { command -> performCommand(command) }
         })
 
+        viewModel.loadUserEmail()
+
         orderButton.setOnClickListener {
             emailTextInput.error = ""
             passwordTextInput.error = ""

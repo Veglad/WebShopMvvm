@@ -39,7 +39,6 @@ class LoginViewModel : ViewModel() {
 
     init {
         App.appComponent.inject(this)
-        initEmailFromCredentials()
     }
 
     fun logInUser(email: String, password: String, isNetworkAvailable: Boolean) {
@@ -84,7 +83,7 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    private fun initEmailFromCredentials() {
+    fun loadUserEmail() {
         if (dataProvider.containsUserCredentials()) {
             val credentials = dataProvider.getUserCredentials()
             credentials?.let {

@@ -34,6 +34,7 @@ class PurchaseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_purchase)
 
+        viewModel.loadPurchasedProducts()
         viewModel.stateLiveData.observe(this, Observer { state -> state?.let { updateUi(it) } })
         viewModel.commandLiveData.observe(this, Observer { command -> performCommand(command) })
 

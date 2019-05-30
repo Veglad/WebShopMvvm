@@ -34,7 +34,6 @@ class PurchaseViewModel : ViewModel() {
 
     init {
         App.appComponent.inject(this)
-        loadPurchasedProducts()
     }
 
     fun loadPurchasedProducts() {

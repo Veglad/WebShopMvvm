@@ -32,14 +32,13 @@ class BasketViewModel : ViewModel() {
 
     init {
         App.appComponent.inject(this)
-        initProductListWithBasketInfo()
     }
 
     fun makeOrder() {
         setCommand(StartOrderScreen)
     }
 
-    private fun initProductListWithBasketInfo() {
+    fun initProductListWithBasketInfo() {
         val state = getUpdatedStateWithBasketInfo()
         state.isBasketEmpty = Basket.productsNumber == 0
 

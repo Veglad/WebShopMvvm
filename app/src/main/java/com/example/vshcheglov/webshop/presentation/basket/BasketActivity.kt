@@ -30,6 +30,8 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_basket)
 
+        viewModel.initProductListWithBasketInfo()
+
         viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
         viewModel.commandLiveData.observe(this, Observer { commandEvent ->
             commandEvent.getContentIfNotHandled()?.let { command ->
