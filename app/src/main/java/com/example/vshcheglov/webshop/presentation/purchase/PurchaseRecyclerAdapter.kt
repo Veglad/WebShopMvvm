@@ -1,13 +1,12 @@
 package com.example.vshcheglov.webshop.presentation.purchase
 
 import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.bumptech.glide.Glide
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.OrderProduct
+import com.example.vshcheglov.webshop.presentation.helpers.ImageLoaderManager
 import com.google.firebase.Timestamp
 import kotlinx.android.synthetic.main.bought_product_recycler_item.view.*
 import java.text.SimpleDateFormat
@@ -32,10 +31,7 @@ class PurchaseRecyclerAdapter(private val context: Context,
         val product = productToTimeStampList[position].first
         val purchaseDate = productToTimeStampList[position].second
         with(product) {
-            Glide.with(holder.view.context)
-                .load(imageUrl)
-                .error(R.drawable.no_image)
-                .into(holder.view.boughtProductImage)
+            ImageLoaderManager.loadImage(holder.view.boughtProductImage, imageUrl)
             holder.view.boughtProductTitle.text = name
             holder.view.boughtProductPrice.text = String.format(
                 holder.view.context.getString(com.example.vshcheglov.webshop.R.string.price_format),

@@ -9,10 +9,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.util.Pair
-import com.bumptech.glide.Glide
 import com.example.vshcheglov.webshop.presentation.detail.DetailActivity
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.Product
+import com.example.vshcheglov.webshop.presentation.helpers.ImageLoaderManager
 import kotlinx.android.synthetic.main.promotional_recycler_item.view.*
 
 class PromotionalRecyclerAdapter(private val context: Context, var productList: List<Product>) :
@@ -29,10 +29,7 @@ class PromotionalRecyclerAdapter(private val context: Context, var productList: 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         with(productList[holder.adapterPosition]) {
-            Glide.with(holder.view.context)
-                .load(imageThumbnailUrl)
-                .error(R.drawable.no_image)
-                .into(holder.view.productImage)
+            ImageLoaderManager.loadImage(holder.view.productImage, imageThumbnailUrl)
             holder.view.productImage.contentDescription = String.format(
                 holder.view.context.getString(com.example.vshcheglov.webshop.R.string.image_content_text_format),
                 name

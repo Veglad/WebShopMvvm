@@ -6,9 +6,9 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.bumptech.glide.Glide
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.Product
+import com.example.vshcheglov.webshop.presentation.helpers.ImageLoaderManager
 import com.example.vshcheglov.webshop.presentation.helpers.Router
 import kotlinx.android.synthetic.main.activity_detail.*
 
@@ -52,10 +52,7 @@ class DetailActivity : AppCompatActivity() {
 
     private fun showProductInfo(product: Product) {
         with(product) {
-            Glide.with(this@DetailActivity)
-                .load(imageThumbnailUrl)
-                .error(R.drawable.no_image)
-                .into(detailProductImageView)
+            ImageLoaderManager.loadImage(detailProductImageView, imageThumbnailUrl)
             detailProductTitle.text = name
             detailPriceTextView.text = String.format(getString(R.string.price_format), price)
             purchasesNumberTextView.text =

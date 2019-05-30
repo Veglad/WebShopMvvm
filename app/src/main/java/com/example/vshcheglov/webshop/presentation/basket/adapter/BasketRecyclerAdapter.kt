@@ -4,10 +4,10 @@ import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.bumptech.glide.Glide
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.presentation.entites.BasketCardPriceInfo
 import com.example.vshcheglov.webshop.presentation.entites.ProductBasketCard
+import com.example.vshcheglov.webshop.presentation.helpers.ImageLoaderManager
 import kotlinx.android.synthetic.main.basket_recycler_item.view.*
 
 class BasketRecyclerAdapter(private val cardProductList: MutableList<ProductBasketCard>) :
@@ -30,10 +30,7 @@ class BasketRecyclerAdapter(private val cardProductList: MutableList<ProductBask
         val view = holder.view
 
         with(cardProductList[position]) {
-            Glide.with(view.context)
-                .load(imageUrl)
-                .error(R.drawable.no_image)
-                .into(view.productBasketImage)
+            ImageLoaderManager.loadImage(view.productBasketImage, imageUrl)
             view.productBasketImage.contentDescription = String.format(
                 view.context.getString(R.string.image_content_text_format),
                 name

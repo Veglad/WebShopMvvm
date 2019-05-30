@@ -38,9 +38,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.example.vshcheglov.webshop.BuildConfig
+import com.example.vshcheglov.webshop.presentation.helpers.ImageLoaderManager
 import com.example.vshcheglov.webshop.presentation.helpers.Router
 import java.io.File
 import java.io.IOException
@@ -204,13 +203,9 @@ class MainActivity : AppCompatActivity() {
     private fun setUserAvatarImage(bitmap: Bitmap?) {
         navHeaderUserImage = navMainHeader.findViewById(R.id.navHeaderUserImage)
         if (bitmap == null) {
-            Glide.with(this).load(R.drawable.profile_avatar_placeholder_large)
-                .apply(RequestOptions.circleCropTransform())
-                .into(navHeaderUserImage)
+            ImageLoaderManager.loadCircularImage(navHeaderUserImage, R.drawable.profile_avatar_placeholder_large)
         } else {
-            Glide.with(this).load(bitmap)
-                .apply(RequestOptions.circleCropTransform())
-                .into(navHeaderUserImage)
+            ImageLoaderManager.loadCircularImage(navHeaderUserImage, bitmap)
         }
     }
 

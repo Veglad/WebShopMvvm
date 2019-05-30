@@ -5,20 +5,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.app.ActivityOptionsCompat
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.util.Pair
-import com.bumptech.glide.Glide
 import com.example.vshcheglov.webshop.presentation.detail.DetailActivity
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.Product
+import com.example.vshcheglov.webshop.presentation.helpers.ImageLoaderManager
 import kotlinx.android.synthetic.main.product_recycler_item.view.*
 
-class SearchRecyclerAdapter(private val context: Context,
-                            var productList: MutableList<Product> = mutableListOf()) :
-    ProductListAdapter<SearchRecyclerAdapter.ViewHolder>() {
+class SearchRecyclerAdapter(
+    private val context: Context,
+    var productList: MutableList<Product> = mutableListOf()
+) : ProductListAdapter<SearchRecyclerAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -31,10 +31,7 @@ class SearchRecyclerAdapter(private val context: Context,
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         with(productList[holder.adapterPosition]) {
-            Glide.with(holder.view.context)
-                .load(imageThumbnailUrl)
-                .error(R.drawable.no_image)
-                .into(holder.view.productImage)
+            ImageLoaderManager.loadImage(holder.view.productImage, imageThumbnailUrl)
             holder.view.productImage.contentDescription = String.format(
                 holder.view.context.getString(com.example.vshcheglov.webshop.R.string.image_content_text_format),
                 name
@@ -57,7 +54,7 @@ class SearchRecyclerAdapter(private val context: Context,
                     putParcelable(DetailActivity.PRODUCT_KEY, productList[position])
                 })
             }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP ) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                 val imagePair = Pair.create(
                     holder.view.productImage as View,
                     context.getString(R.string.shared_image_transition_name)

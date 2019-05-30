@@ -10,10 +10,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.util.Pair
-import com.bumptech.glide.Glide
 import com.example.vshcheglov.webshop.presentation.detail.DetailActivity
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.Product
+import com.example.vshcheglov.webshop.presentation.helpers.ImageLoaderManager
 import com.example.vshcheglov.webshop.presentation.helpres.ItemSnapHelper
 import kotlinx.android.synthetic.main.product_recycler_item.view.*
 import kotlinx.android.synthetic.main.products_recycler_title.view.*
@@ -123,10 +123,7 @@ class ProductsRecyclerAdapter(
         val view = (holder as ProductsViewHolder).view
         val product = getProductByPosition(holder.adapterPosition)
         with(product) {
-            Glide.with(view.context)
-                .load(imageThumbnailUrl)
-                .error(R.drawable.no_image)
-                .into(view.productImage)
+            ImageLoaderManager.loadImage(view.productImage, imageThumbnailUrl)
             view.productImage.contentDescription = String.format(
                 view.context.getString(R.string.image_content_text_format),
                 name
