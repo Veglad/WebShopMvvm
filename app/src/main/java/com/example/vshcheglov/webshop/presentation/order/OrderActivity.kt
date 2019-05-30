@@ -21,13 +21,15 @@ import kotlinx.android.synthetic.main.activity_order.*
 
 class OrderActivity : AppCompatActivity() {
 
-    private lateinit var viewModel: OrderViewModel
+    private val viewModel: OrderViewModel by lazy {
+        ViewModelProviders.of(this).get(OrderViewModel::class.java)
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_order)
 
-        viewModel = ViewModelProviders.of(this).get(OrderViewModel::class.java)
         viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
         viewModel.commandLiveData.observe(this, Observer { commandEvent ->
             commandEvent.getContentIfNotHandled()?.let { command -> performCommand(command) }

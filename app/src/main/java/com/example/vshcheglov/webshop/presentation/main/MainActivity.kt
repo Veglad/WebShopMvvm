@@ -67,7 +67,9 @@ class MainActivity : AppCompatActivity() {
     private var snackbar: Snackbar? = null
     private val productsRecyclerAdapter = ProductsRecyclerAdapter(this)
     private val searchRecyclerAdapter = SearchRecyclerAdapter(this)
-    private lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by lazy {
+        ViewModelProviders.of(this).get(MainViewModel::class.java)
+    }
 
     private lateinit var toggle: ActionBarDrawerToggle
     private var isErrorVisible = false
@@ -76,7 +78,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
         viewModel.commandLiveData.observe(this, Observer { commandEvent ->
             commandEvent.getContentIfNotHandled()?.let { command -> performCommand(command) }

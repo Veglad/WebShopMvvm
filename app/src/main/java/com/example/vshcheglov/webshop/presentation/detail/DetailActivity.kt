@@ -21,13 +21,14 @@ class DetailActivity : AppCompatActivity() {
         const val PRODUCT_KEY = "product_key"
     }
 
-    private lateinit var viewModel: DetailViewModel
+    private val viewModel: DetailViewModel by lazy {
+        ViewModelProviders.of(this).get(DetailViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        viewModel = ViewModelProviders.of(this).get(DetailViewModel::class.java)
         initViewModelObservers()
 
         supportActionBar?.let {

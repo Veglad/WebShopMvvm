@@ -19,13 +19,13 @@ import java.lang.Exception
 
 class RegisterActivity : AppCompatActivity() {
 
-    private lateinit var viewModel: RegisterViewModel
+    private val viewModel: RegisterViewModel by lazy {
+        ViewModelProviders.of(this).get(RegisterViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
-
-        viewModel = ViewModelProviders.of(this).get(RegisterViewModel::class.java)
 
         buttonRegisterUser.setOnClickListener {
             clearTextInputErrors()

@@ -26,13 +26,13 @@ import kotlinx.android.synthetic.main.message_with_action_layout.*
 class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.BasketRecyclerItemTouchHelperListener {
 
     private lateinit var basketAdapter: BasketRecyclerAdapter
-    private lateinit var viewModel: BasketViewModel
+    private val viewModel: BasketViewModel by lazy {
+        ViewModelProviders.of(this).get(BasketViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_basket)
-
-        viewModel = ViewModelProviders.of(this).get(BasketViewModel::class.java)
 
         viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
         viewModel.commandLiveData.observe(this, Observer { commandEvent ->

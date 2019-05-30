@@ -29,13 +29,14 @@ class PurchaseActivity : AppCompatActivity() {
     }
 
     private lateinit var boughtRecyclerAdapter: PurchaseRecyclerAdapter
-    private lateinit var viewModel: PurchaseViewModel
+    private val viewModel: PurchaseViewModel by lazy {
+        ViewModelProviders.of(this).get(PurchaseViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_purchase)
 
-        viewModel = ViewModelProviders.of(this).get(PurchaseViewModel::class.java)
         viewModel.stateLiveData.observe(this, Observer { state -> state?.let { updateUi(it) } })
         viewModel.commandLiveData.observe(this, Observer { command -> performCommand(command) })
 
