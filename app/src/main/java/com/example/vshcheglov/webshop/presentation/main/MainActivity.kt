@@ -79,9 +79,11 @@ class MainActivity : AppCompatActivity() {
         })
 
         viewModel.loadProducts(isNetworkAvailable())
+        viewModel.loadUserEmail(isNetworkAvailable())
+        viewModel.loadUserAvatar(isNetworkAvailable())
 
         tryAgainButton.setOnClickListener { loadProducts() }
-        productsSwipeRefreshLayout.setOnRefreshListener  { loadProducts() }
+        productsSwipeRefreshLayout.setOnRefreshListener { loadProducts() }
 
         productsSwipeRefreshLayout.setColorSchemeColors(
             ContextCompat.getColor(this, R.color.primary),

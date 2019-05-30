@@ -21,8 +21,6 @@ class MainViewModel : ViewModel() {
     @Inject
     lateinit var dataProvider: DataProvider
 
-    private var isNeedToSaveAvatar = false
-
     private val job: Job = Job()
     private val uiCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + job)
 
@@ -38,27 +36,6 @@ class MainViewModel : ViewModel() {
 
     init {
         App.appComponent.inject(this)
-
-        try {
-            fetchProducts()
-            loadUserEmail()
-            loadUserAvatar()
-        } catch (e: Exception) {
-            setCommand(ShowNoInternet)
-        } finally {
-            _stateLiveData.value = getState().copy(isLoading = false)
-        }
-
-        if (isNeedToSaveAvatar) {
-            getState().avatarImage?.let { bitmap ->
-                uiCoroutineScope.launch {
-                    withContext(Dispatchers.IO) {
-                        dataProvider.saveUserProfilePhoto(bitmap, "JPEG_" + UUID.randomUUID())
-                    }
-                    isNeedToSaveAvatar = false//TODO: Handle if photo is not saved (Use WorkManager)
-                }
-            }
-        }
     }
 
     fun loadProducts(isNetworkAvailable: Boolean) {
@@ -98,7 +75,8 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun loadUserEmail() {
+    fun loadUserEmail(isNetworkAvailable: Boolean) {
+        if (!isNetworkAvailable) return
         if (getState().userEmail == null) {
             uiCoroutineScope.launch {
                 try {
@@ -111,7 +89,8 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun loadUserAvatar() {
+    fun loadUserAvatar(isNetworkAvailable: Boolean) {
+        if (!isNetworkAvailable) return
         if (getState().avatarImage == null) {
             uiCoroutineScope.launch {
                 try {
@@ -147,7 +126,17 @@ class MainViewModel : ViewModel() {
     //This Method called from OnActivityResult (before onResume) => view == null
     fun updateUserProfilePhoto(profilePhotoBitmap: Bitmap) {
         _stateLiveData.value = getState().copy(avatarImage = profilePhotoBitmap)
-        isNeedToSaveAvatar = true
+        saveUserAvatar()
+    }
+
+    private fun saveUserAvatar() {
+        getState().avatarImage?.let { bitmap ->
+            uiCoroutineScope.launch {
+                withContext(Dispatchers.IO) {
+                    dataProvider.saveUserProfilePhoto(bitmap, "JPEG_" + UUID.randomUUID())
+                } //TODO: Handle if photo is not saved (Use WorkManager)
+            }
+        }
     }
 
     fun buyProduct(product: Product) {
