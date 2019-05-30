@@ -60,19 +60,19 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun performCommand(command: RegisterCommand) {
         when (command) {
-            is RegisterCommand.StartMainScreen -> Router.showMain(this)
-            is RegisterCommand.ShowEmailInvalid -> registerEmailTextInput.error = getString(R.string.email_error)
-            is RegisterCommand.ShowPasswordsNotMatch -> {
+            is StartMainScreen -> Router.showMain(this)
+            is ShowEmailInvalid -> registerEmailTextInput.error = getString(R.string.email_error)
+            is ShowPasswordsNotMatch -> {
                 registerConfirmPasswordTextInput.error = getString(R.string.passwords_not_match)
             }
-            is RegisterCommand.ShowPasswordInvalid -> {
+            is ShowPasswordInvalid -> {
                 registerPasswordTextInput.error = resources.getString(R.string.password_error)
             }
-            is RegisterCommand.ShowConfirmPasswordInvalid -> {
+            is ShowConfirmPasswordInvalid -> {
                 registerConfirmPasswordTextInput.error = resources.getString(R.string.password_error)
             }
-            is RegisterCommand.ShowNoInternet -> showNoInternetError()
-            is RegisterCommand.ShowRegisterError -> showLoginError(command.exception)
+            is ShowNoInternet -> showNoInternetError()
+            is ShowRegisterError -> showLoginError(command.exception)
         }
     }
 

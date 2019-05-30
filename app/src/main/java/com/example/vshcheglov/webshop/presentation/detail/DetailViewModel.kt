@@ -25,7 +25,7 @@ class DetailViewModel : ViewModel() {
 
     fun buyProduct() {
         Basket.addProduct(getState().product)
-        _commandLiveData.value = EventWithContent(DetailCommand.StartBasketScreen)
+        _commandLiveData.value = EventWithContent(StartBasketScreen)
     }
 }
 
@@ -33,6 +33,5 @@ data class DetailViewState(
     var product: Product = Product()
 )
 
-sealed class DetailCommand {
-    object StartBasketScreen : DetailCommand()
-}
+sealed class DetailCommand
+object StartBasketScreen : DetailCommand()

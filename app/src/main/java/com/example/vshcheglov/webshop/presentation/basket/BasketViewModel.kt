@@ -36,7 +36,7 @@ class BasketViewModel : ViewModel() {
     }
 
     fun makeOrder() {
-        setCommand(BasketCommand.StartOrderScreen)
+        setCommand(StartOrderScreen)
     }
 
     private fun initProductListWithBasketInfo() {
@@ -45,7 +45,7 @@ class BasketViewModel : ViewModel() {
 
         if (!state.isBasketEmpty) {
             val basketCardList = productBasketCardMapper.map(Basket)
-            setCommand(BasketCommand.ShowBasketCardList(basketCardList))
+            setCommand(ShowBasketCardList(basketCardList))
         }
 
         _stateLiveData.value = state
@@ -77,7 +77,7 @@ class BasketViewModel : ViewModel() {
             Basket.getSameProductDiscountPrice(product.id)
         )
 
-        setCommand(BasketCommand.UpdateBasketCardPriceInfo(basketCardPriceInfo))
+        setCommand(UpdateBasketCardPriceInfo(basketCardPriceInfo))
     }
 
 
@@ -93,7 +93,7 @@ class BasketViewModel : ViewModel() {
 
         Basket.removeSameProducts(position)
 
-        setCommand(BasketCommand.RemoveBasketCard(position))
+        setCommand(RemoveBasketCard(position))
 
         _stateLiveData.value = getUpdatedStateWithBasketInfo().also { state ->
             state.isBasketEmpty = Basket.productsNumber == 0
@@ -107,7 +107,7 @@ class BasketViewModel : ViewModel() {
             state.isBasketEmpty = Basket.productsNumber == 0
         }
 
-        setCommand(BasketCommand.RestoreBasketCard(deletedIndex))
+        setCommand(RestoreBasketCard(deletedIndex))
     }
 
     private fun setCommand(command: BasketCommand) {
@@ -121,10 +121,9 @@ data class BasketViewState(
     var isBasketEmpty: Boolean = true
 )
 
-sealed class BasketCommand {
-    class RemoveBasketCard(val position: Int) : BasketCommand()
-    class RestoreBasketCard(val position: Int) : BasketCommand()
-    class UpdateBasketCardPriceInfo(val basketCardPriceInfo: BasketCardPriceInfo) : BasketCommand()
-    class ShowBasketCardList(val basketCards: MutableList<ProductBasketCard>) : BasketCommand()
-    object StartOrderScreen : BasketCommand()
-}
+sealed class BasketCommand
+class RemoveBasketCard(val position: Int) : BasketCommand()
+class RestoreBasketCard(val position: Int) : BasketCommand()
+class UpdateBasketCardPriceInfo(val basketCardPriceInfo: BasketCardPriceInfo) : BasketCommand()
+class ShowBasketCardList(val basketCards: MutableList<ProductBasketCard>) : BasketCommand()
+object StartOrderScreen : BasketCommand()

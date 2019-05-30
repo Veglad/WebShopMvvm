@@ -46,19 +46,19 @@ class RegisterViewModel : ViewModel() {
         var isValid = true
 
         if (!email.isEmailValid()) {
-            setCommand(RegisterCommand.ShowEmailInvalid)
+            setCommand(ShowEmailInvalid)
             isValid = false
         }
         if (password != confirmPassword) {
-            setCommand(RegisterCommand.ShowPasswordsNotMatch)
+            setCommand(ShowPasswordsNotMatch)
             isValid = false
         }
         if (!password.isPasswordValid()) {
-            setCommand(RegisterCommand.ShowPasswordInvalid)
+            setCommand(ShowPasswordInvalid)
             isValid = false
         }
         if (!confirmPassword.isPasswordValid()) {
-            setCommand(RegisterCommand.ShowConfirmPasswordInvalid)
+            setCommand(ShowConfirmPasswordInvalid)
             isValid = false
         }
 
@@ -66,7 +66,7 @@ class RegisterViewModel : ViewModel() {
             if (!isValid) return
             registerUserWithEmailAndPassword(email, password)
         } else {
-            setCommand(RegisterCommand.ShowNoInternet)
+            setCommand(ShowNoInternet)
         }
     }
 
@@ -83,10 +83,10 @@ class RegisterViewModel : ViewModel() {
                     }
                 }
 
-                setCommand(RegisterCommand.StartMainScreen)
+                setCommand(StartMainScreen)
             } catch (ex: Exception) {
                 Timber.e("user registration error: $ex")
-                setCommand(RegisterCommand.ShowRegisterError(ex))
+                setCommand(ShowRegisterError(ex))
             } finally {
                 _stateLiveData.value = getState().copy(isLoading = false)
             }
@@ -108,12 +108,11 @@ data class RegisterViewState(
     var isLoading: Boolean = false
 )
 
-sealed class RegisterCommand {
-    class ShowRegisterError(val exception: Exception) : RegisterCommand()
-    object StartMainScreen : RegisterCommand()
-    object ShowNoInternet : RegisterCommand()
-    object ShowConfirmPasswordInvalid : RegisterCommand()
-    object ShowPasswordInvalid : RegisterCommand()
-    object ShowPasswordsNotMatch : RegisterCommand()
-    object ShowEmailInvalid : RegisterCommand()
-}
+sealed class RegisterCommand
+class ShowRegisterError(val exception: Exception) : RegisterCommand()
+object StartMainScreen : RegisterCommand()
+object ShowNoInternet : RegisterCommand()
+object ShowConfirmPasswordInvalid : RegisterCommand()
+object ShowPasswordInvalid : RegisterCommand()
+object ShowPasswordsNotMatch : RegisterCommand()
+object ShowEmailInvalid : RegisterCommand()

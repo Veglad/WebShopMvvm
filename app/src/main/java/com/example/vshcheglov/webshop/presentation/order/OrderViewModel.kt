@@ -59,7 +59,7 @@ class OrderViewModel : ViewModel() {
                     saveOrder()
                 }
             } else {
-                setCommand(OrderCommand.ShowNoInternet)
+                setCommand(ShowNoInternet)
             }
             _stateLiveData.value = getState().copy(isLoading = false)
         }
@@ -69,32 +69,32 @@ class OrderViewModel : ViewModel() {
         var isValid = true
         if (card.name.length < MIN_NAME_LENGTH) {
             isValid = false
-            setCommand(OrderCommand.ShowInvalidName)
+            setCommand(ShowInvalidName)
         }
         if (card.lastName.length < MIN_NAME_LENGTH) {
             isValid = false
-            setCommand(OrderCommand.ShowInvalidSecondName)
+            setCommand(ShowInvalidSecondName)
         }
         card.cardNumber = card.cardNumber.replace(" ", "")
         if (!card.cardNumber.isCardNumberValid()) {
             isValid = false
-            setCommand(OrderCommand.ShowInvalidCardNumber)
+            setCommand(ShowInvalidCardNumber)
         }
         val cardMonth = card.cardMonth
         if (cardMonth == null || cardMonth !in MIN_CARD_MONTH_NUMBER..MAX_CARD_MONTH_NUMBER) {
             isValid = false
-            setCommand(OrderCommand.ShowInvalidCardMonth)
+            setCommand(ShowInvalidCardMonth)
         }
         val cardYear = card.cardYear
         if (cardYear == null ||
             cardYear !in Calendar.getInstance().get(Calendar.YEAR) % 100..MAX_CARD_YEAR_NUMBER
         ) {
             isValid = false
-            setCommand(OrderCommand.ShowInvalidCardYear)
+            setCommand(ShowInvalidCardYear)
         }
         if (!card.cardCvv.isCvvValid()) {
             isValid = false
-            setCommand(OrderCommand.ShowInvalidCardCvv)
+            setCommand(ShowInvalidCardCvv)
         }
         return isValid
     }
@@ -106,9 +106,9 @@ class OrderViewModel : ViewModel() {
                 dataProvider.saveOrder(order)
             }
             Basket.clear()
-            setCommand(OrderCommand.NotifyOrderCompleted)
+            setCommand(NotifyOrderCompleted)
         } catch (ex: Exception) {
-            setCommand(OrderCommand.ShowOrderSaveError(ex))
+            setCommand(ShowOrderSaveError(ex))
         }
     }
 
@@ -127,14 +127,13 @@ data class OrderViewState(
     var orderPrice: Double = 0.0
 )
 
-sealed class OrderCommand {
-    class ShowOrderSaveError(val exception: Exception) : OrderCommand()
-    object ShowInvalidName : OrderCommand()
-    object ShowInvalidSecondName : OrderCommand()
-    object ShowInvalidCardNumber : OrderCommand()
-    object ShowInvalidCardMonth : OrderCommand()
-    object ShowInvalidCardYear : OrderCommand()
-    object ShowInvalidCardCvv : OrderCommand()
-    object ShowNoInternet : OrderCommand()
-    object NotifyOrderCompleted : OrderCommand()
-}
+sealed class OrderCommand
+class ShowOrderSaveError(val exception: Exception) : OrderCommand()
+object ShowInvalidName : OrderCommand()
+object ShowInvalidSecondName : OrderCommand()
+object ShowInvalidCardNumber : OrderCommand()
+object ShowInvalidCardMonth : OrderCommand()
+object ShowInvalidCardYear : OrderCommand()
+object ShowInvalidCardCvv : OrderCommand()
+object ShowNoInternet : OrderCommand()
+object NotifyOrderCompleted : OrderCommand()

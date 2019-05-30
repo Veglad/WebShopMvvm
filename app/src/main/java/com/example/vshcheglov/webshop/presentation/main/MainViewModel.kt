@@ -44,7 +44,7 @@ class MainViewModel : ViewModel() {
             loadUserEmail()
             loadUserAvatar()
         } catch (e: Exception) {
-            setCommand(MainCommand.ShowNoInternet)
+            setCommand(ShowNoInternet)
         } finally {
             _stateLiveData.value = getState().copy(isLoading = false)
         }
@@ -71,7 +71,7 @@ class MainViewModel : ViewModel() {
         if (isNetworkAvailable) {
             fetchProducts()
         } else {
-            setCommand(MainCommand.ShowNoInternet)
+            setCommand(ShowNoInternet)
             _stateLiveData.value = getState().copy(isLoading = false)
         }
     }
@@ -91,7 +91,7 @@ class MainViewModel : ViewModel() {
 
             } catch (ex: Exception) {
                 Timber.e("Products fetching error:$ex")
-                setCommand(MainCommand.ShowError(ex))
+                setCommand(ShowError(ex))
             } finally {
                 _stateLiveData.value = getState().copy(isLoading = false)
             }
@@ -129,7 +129,7 @@ class MainViewModel : ViewModel() {
 
     fun logOut() {
         dataProvider.logOut()
-        setCommand(MainCommand.StartLoginScreen)
+        setCommand(StartLoginScreen)
     }
 
     fun searchProducts(searchText: String) {
@@ -173,8 +173,7 @@ data class MainViewState(
     var userEmail: String? = null
 )
 
-sealed class MainCommand {
-    class ShowError(val exception: Exception) : MainCommand()
-    object ShowNoInternet : MainCommand()
-    object StartLoginScreen : MainCommand()
-}
+sealed class MainCommand
+class ShowError(val exception: Exception) : MainCommand()
+object ShowNoInternet : MainCommand()
+object StartLoginScreen : MainCommand()

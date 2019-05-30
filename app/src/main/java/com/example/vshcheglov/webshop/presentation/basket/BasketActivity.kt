@@ -57,11 +57,11 @@ class BasketActivity : AppCompatActivity(), BasketRecyclerItemTouchHelper.Basket
 
     private fun performCommand(command: BasketCommand) {
         when (command) {
-            is BasketCommand.StartOrderScreen -> Router.showOrder(this)
-            is BasketCommand.RemoveBasketCard -> removeBasketCard(command.position)
-            is BasketCommand.RestoreBasketCard -> restoreBasketCard(command.position)
-            is BasketCommand.UpdateBasketCardPriceInfo -> updateBasketCardPriceInfo(command.basketCardPriceInfo)
-            is BasketCommand.ShowBasketCardList -> basketAdapter.updateBasketCardList(command.basketCards)
+            is StartOrderScreen -> Router.showOrder(this)
+            is RemoveBasketCard -> removeBasketCard(command.position)
+            is RestoreBasketCard -> restoreBasketCard(command.position)
+            is UpdateBasketCardPriceInfo -> updateBasketCardPriceInfo(command.basketCardPriceInfo)
+            is ShowBasketCardList -> basketAdapter.updateBasketCardList(command.basketCards)
         }
     }
 

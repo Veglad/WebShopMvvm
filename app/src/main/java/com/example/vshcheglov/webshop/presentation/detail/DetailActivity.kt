@@ -70,7 +70,7 @@ class DetailActivity : AppCompatActivity() {
 
     private fun performCommand(command: DetailCommand) {
         when (command) {
-            is DetailCommand.StartBasketScreen -> Router.showBasket(this)
+            is StartBasketScreen -> Router.showBasket(this)
         }
     }
 

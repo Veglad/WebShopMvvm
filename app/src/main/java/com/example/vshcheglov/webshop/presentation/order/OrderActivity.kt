@@ -51,21 +51,21 @@ class OrderActivity : AppCompatActivity() {
 
     private fun performCommand(command: OrderCommand) {
         when (command) {
-            is OrderCommand.ShowNoInternet -> showNoInternetError()
-            is OrderCommand.ShowInvalidName -> nameTextInput.error = resources.getString(R.string.order_invalid_name)
-            is OrderCommand.ShowInvalidSecondName -> {
+            is ShowNoInternet -> showNoInternetError()
+            is ShowInvalidName -> nameTextInput.error = resources.getString(R.string.order_invalid_name)
+            is ShowInvalidSecondName -> {
                 lastNameTextInput.error = getString(R.string.order_invalid_last_name)
             }
-            is OrderCommand.ShowInvalidCardNumber -> {
+            is ShowInvalidCardNumber -> {
                 cardNumberTextInput.error = getString(R.string.order_invalid_card_number)
             }
-            is OrderCommand.ShowInvalidCardMonth -> {
+            is ShowInvalidCardMonth -> {
                 cardMonthTextInput.error = getString(R.string.order_invalid_card_month)
             }
-            is OrderCommand.ShowInvalidCardYear -> cardYearTextInput.error = getString(R.string.order_invalid_card_year)
-            is OrderCommand.ShowInvalidCardCvv -> cardCvvTextInput.error = getString(R.string.order_invalid_cv)
-            is OrderCommand.ShowOrderSaveError -> showOrderSaveError()
-            is OrderCommand.NotifyOrderCompleted -> notifyOrderCompleted()
+            is ShowInvalidCardYear -> cardYearTextInput.error = getString(R.string.order_invalid_card_year)
+            is ShowInvalidCardCvv -> cardCvvTextInput.error = getString(R.string.order_invalid_cv)
+            is ShowOrderSaveError -> showOrderSaveError()
+            is NotifyOrderCompleted -> notifyOrderCompleted()
         }
     }
 

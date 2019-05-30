@@ -59,8 +59,8 @@ class PurchaseActivity : AppCompatActivity() {
     private fun performCommand(commandSingleEvent: EventWithContent<PurchaseCommand>) {
         commandSingleEvent.getContentIfNotHandled()?.let { command ->
             when (command) {
-                is PurchaseCommand.NotifyNoProducts -> showNoData()
-                is PurchaseCommand.NotifyError -> showProductsFetchingError(command.exception)
+                is NotifyNoProducts -> showNoData()
+                is NotifyError -> showProductsFetchingError(command.exception)
             }
         }
     }

@@ -49,11 +49,11 @@ class PurchaseViewModel : ViewModel() {
                     }.flatten()
                     _stateLiveData.value = getState().copy(products = productToTimeStampList)
                 } else {
-                    _command.value = EventWithContent(PurchaseCommand.NotifyNoProducts)
+                    _command.value = EventWithContent(NotifyNoProducts)
                 }
             } catch (ex: Exception) {
                 Timber.d("Getting user products error: $ex")
-                _command.value = EventWithContent(PurchaseCommand.NotifyError(ex))
+                _command.value = EventWithContent(NotifyError(ex))
             } finally {
                 _stateLiveData.value = getState().copy(isLoading = false)
             }
@@ -71,7 +71,6 @@ data class PurchaseViewState(
     var isLoading: Boolean = false
 )
 
-sealed class PurchaseCommand {
-    class NotifyError(val exception: Exception = Exception()) : PurchaseCommand()
-    object NotifyNoProducts : PurchaseCommand()
-}
+sealed class PurchaseCommand
+class NotifyError(val exception: Exception = Exception()) : PurchaseCommand()
+object NotifyNoProducts : PurchaseCommand()

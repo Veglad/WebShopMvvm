@@ -121,9 +121,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun performCommand(command: MainCommand) {
         when (command) {
-            is MainCommand.ShowError -> showError(command.exception)
-            is MainCommand.ShowNoInternet -> showNoInternetWarning()
-            is MainCommand.StartLoginScreen -> Router.showLogin(this)
+            is ShowError -> showError(command.exception)
+            is ShowNoInternet -> showNoInternetWarning()
+            is StartLoginScreen -> Router.showLogin(this)
         }
     }
 
