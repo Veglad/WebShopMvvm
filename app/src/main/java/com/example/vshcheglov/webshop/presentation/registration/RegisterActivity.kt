@@ -6,14 +6,17 @@ import android.text.InputType
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.extensions.isNetworkAvailable
 import com.example.vshcheglov.webshop.presentation.helpers.Router
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.activity_register.*
 import java.lang.Exception
 
@@ -48,12 +51,12 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         registerShowPasswordButton.setOnTouchListener { _, event ->
-            showPassword(event, registerPassword)
+            showPassword(event, registerPassword, registerShowPasswordButton)
             true
         }
 
         showConfirmPasswordButton.setOnTouchListener { _, event ->
-            showPassword(event, registerConfirmPassword)
+            showPassword(event, registerConfirmPassword, showConfirmPasswordButton)
             true
         }
     }
@@ -86,11 +89,24 @@ class RegisterActivity : AppCompatActivity() {
         registerConfirmPasswordTextInput.error = ""
     }
 
-    private fun showPassword(event: MotionEvent, editText: EditText) { //TODO: Change icon when pressed
+    private fun showPassword(
+        event: MotionEvent,
+        editText: EditText,
+        imageButton: ImageButton
+    ) {
         when (event.action) {
-            MotionEvent.ACTION_DOWN -> editText.inputType = InputType.TYPE_CLASS_TEXT
-            MotionEvent.ACTION_UP -> editText.inputType =
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            MotionEvent.ACTION_DOWN -> {
+                editText.inputType = InputType.TYPE_CLASS_TEXT
+                val showPasswordDrawable =
+                    ContextCompat.getDrawable(this, R.drawable.ic_hide_password_white_24dp)
+                imageButton.setImageDrawable(showPasswordDrawable)
+            }
+            MotionEvent.ACTION_UP -> {
+                editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                val hidePasswordDrawable =
+                    ContextCompat.getDrawable(this, R.drawable.ic_show_password_white_24dp)
+                imageButton.setImageDrawable(hidePasswordDrawable)
+            }
         }
     }
 

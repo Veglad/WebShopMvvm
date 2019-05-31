@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.R
@@ -50,11 +51,20 @@ class LoginActivity : AppCompatActivity() {
 
         buttonRegister.setOnClickListener { Router.showRegister(this) }
         useFingerprintButton.setOnClickListener { prepareBiometricPrompt() }
-        showPasswordButton.setOnTouchListener { _, event ->
+        showPasswordLoginButton.setOnTouchListener { _, event ->
             when (event.action) {
-                MotionEvent.ACTION_DOWN -> loginPassword.inputType = InputType.TYPE_CLASS_TEXT
-                MotionEvent.ACTION_UP -> loginPassword.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                MotionEvent.ACTION_DOWN -> {
+                    loginPassword.inputType = InputType.TYPE_CLASS_TEXT
+                    val showPasswordDrawable =
+                        ContextCompat.getDrawable(this, R.drawable.ic_hide_password_white_24dp)
+                    showPasswordLoginButton.setImageDrawable(showPasswordDrawable)
+                }
+                MotionEvent.ACTION_UP -> {
+                    loginPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    val hidePasswordDrawable =
+                        ContextCompat.getDrawable(this, R.drawable.ic_show_password_white_24dp)
+                    showPasswordLoginButton.setImageDrawable(hidePasswordDrawable)
+                }
             }
 
             true
