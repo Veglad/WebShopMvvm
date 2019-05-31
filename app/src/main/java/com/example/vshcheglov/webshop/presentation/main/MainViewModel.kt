@@ -13,6 +13,7 @@ import com.example.vshcheglov.webshop.App
 import com.example.vshcheglov.webshop.data.DataProvider
 import com.example.vshcheglov.webshop.domain.Basket
 import com.example.vshcheglov.webshop.domain.Product
+import com.example.vshcheglov.webshop.presentation.helpers.BackgroundHelper
 import com.example.vshcheglov.webshop.presentation.helpers.ImagePickHelper
 import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import com.example.vshcheglov.webshop.presentation.main.helpers.SearchFilter
@@ -133,24 +134,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
-    private fun saveUserAvatar(imagePath: String) {
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-        val inputData = Data.Builder()
-            .putString(AvatarWorker.KEY_AVATAR_WORKER_IMAGE_PATH, imagePath)
-            .build()
-
-        val avatarRequest = OneTimeWorkRequestBuilder<AvatarWorker>()
-            .setConstraints(constraints)
-            .setInputData(inputData)
-            .build()
-
-        WorkManager.getInstance(getApplication())
-            .enqueue(avatarRequest)
-    }
-
     fun buyProduct(product: Product) {
         Basket.addProduct(product)
     }
@@ -171,9 +154,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         uiCoroutineScope.launch {
             withContext(Dispatchers.Default) {
                 imagePicker.saveImageToInternalStorage(imageUri, isFromCamera)
-                imagePicker.imagePath?.let { imagePath ->
-                    saveUserAvatar(imagePath)
-                }
+                imagePicker.imagePath?.let { BackgroundHelper.saveUserAvatar(it, getApplication<App>()) }
             }
         }
     }

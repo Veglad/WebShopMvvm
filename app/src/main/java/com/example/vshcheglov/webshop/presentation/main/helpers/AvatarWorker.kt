@@ -9,6 +9,7 @@ import androidx.work.Worker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.example.vshcheglov.webshop.data.DataProvider
+import timber.log.Timber
 import java.io.File
 import java.util.*
 
@@ -21,7 +22,6 @@ class AvatarWorker(context: Context, workerParameters: WorkerParameters, val dat
     }
 
     override fun doWork(): Result {
-        Log.d(TAG, "doWork start")
         val imagePath = inputData.getString(KEY_AVATAR_WORKER_IMAGE_PATH)
         val imageUri = Uri.parse("file://$imagePath")
         val bitmap = MediaStore.Images.Media.getBitmap(applicationContext.contentResolver, imageUri)
@@ -29,7 +29,7 @@ class AvatarWorker(context: Context, workerParameters: WorkerParameters, val dat
         if (bitmap != null) {
             dataProvider.saveUserProfilePhoto(bitmap, "JPEG_" + UUID.randomUUID())
         } else {
-            Log.e(TAG, "doWork failure")
+            Timber.e(TAG, "doWork failure")
             return Result.failure()
         }
 
@@ -37,7 +37,7 @@ class AvatarWorker(context: Context, workerParameters: WorkerParameters, val dat
         val imageFile = File(imagePath)
         imageFile.delete()
 
-        Log.d(TAG, "doWork success")
+        Timber.d(TAG, "doWork success")
         return Result.success()
     }
 }
@@ -48,7 +48,6 @@ class AvatarWorkerFactory(private val dataProvider: DataProvider) : WorkerFactor
         workerClassName: String,
         workerParameters: WorkerParameters
     ): ListenableWorker? {
-        Log.d(AvatarWorker.TAG, "createWorker start")
         return AvatarWorker(appContext, workerParameters, dataProvider)
     }
 }

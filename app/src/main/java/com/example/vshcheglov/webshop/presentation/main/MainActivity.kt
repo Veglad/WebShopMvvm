@@ -213,8 +213,9 @@ class MainActivity : AppCompatActivity() {
             //Always returns requestCode == -1 TODO: Investigate problem
             requestCode == PICK_IMAGE_REQUEST_CODE && resultCode != Activity.RESULT_CANCELED
         ) {
+            val imageUri = data?.data
             when (requestCode) {
-                PICK_IMAGE_REQUEST_CODE -> viewModel.setImage(data?.data, data?.data == null)
+                PICK_IMAGE_REQUEST_CODE -> viewModel.setImage(imageUri, imageUri == null)
             }
         }
     }

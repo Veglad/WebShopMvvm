@@ -6,9 +6,9 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import androidx.core.content.FileProvider
 import com.example.vshcheglov.webshop.BuildConfig
+import timber.log.Timber
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -25,7 +25,6 @@ class ImagePickHelper(private val context: Context) {
     }
 
     fun getCaptureIntent(): Intent? {
-
         // Create the File where the photo should go
         val photoFile: File = try {
             imagePath = imagePath ?: createImageFileName()
@@ -66,7 +65,6 @@ class ImagePickHelper(private val context: Context) {
                 copy(inputStream, fileOutputStream)
             }
         }
-        Log.d("worker", "finish copying")
     }
 
     private fun copy(source: InputStream, sink: OutputStream) {
