@@ -169,7 +169,7 @@ class UserNetworkDataSource {
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
             val byteOutputStream = ByteArrayOutputStream()
-            profilePhotoBitmap.compress(CompressFormat.PNG, 0, byteOutputStream)
+            profilePhotoBitmap.compress(CompressFormat.JPEG, 40, byteOutputStream)
             val bitmapData = byteOutputStream.toByteArray()
             val byteInputStream = ByteArrayInputStream(bitmapData)
 
