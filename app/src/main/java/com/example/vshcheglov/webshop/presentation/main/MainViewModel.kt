@@ -1,25 +1,36 @@
 package com.example.vshcheglov.webshop.presentation.main
 
+import android.app.Application
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.work.*
 import com.example.vshcheglov.webshop.App
 import com.example.vshcheglov.webshop.data.DataProvider
 import com.example.vshcheglov.webshop.domain.Basket
 import com.example.vshcheglov.webshop.domain.Product
-import com.example.vshcheglov.webshop.presentation.helpres.Event
+import com.example.vshcheglov.webshop.presentation.helpers.BackgroundHelper
+import com.example.vshcheglov.webshop.presentation.helpers.ImagePickHelper
 import com.example.vshcheglov.webshop.presentation.helpres.EventWithContent
 import com.example.vshcheglov.webshop.presentation.main.helpers.SearchFilter
 import kotlinx.coroutines.*
 import timber.log.Timber
-import java.util.*
 import javax.inject.Inject
+import com.example.vshcheglov.webshop.presentation.main.helpers.AvatarWorker
+import com.example.vshcheglov.webshop.presentation.main.helpers.AvatarWorkerFactory
 
-class MainViewModel : ViewModel() {
+
+class MainViewModel(application: Application) : AndroidViewModel(application) {
     @Inject
     lateinit var dataProvider: DataProvider
+    @Inject
+    lateinit var avatarWorkerFactory: AvatarWorkerFactory
+    @Inject
+    lateinit var imagePicker: ImagePickHelper
 
     private val job: Job = Job()
     private val uiCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main + job)
@@ -123,22 +134,6 @@ class MainViewModel : ViewModel() {
 
     }
 
-    //This Method called from OnActivityResult (before onResume) => view == null
-    fun updateUserProfilePhoto(profilePhotoBitmap: Bitmap) {
-        _stateLiveData.value = getState().copy(avatarImage = profilePhotoBitmap)
-        saveUserAvatar()
-    }
-
-    private fun saveUserAvatar() {
-        getState().avatarImage?.let { bitmap ->
-            uiCoroutineScope.launch {
-                withContext(Dispatchers.IO) {
-                    dataProvider.saveUserProfilePhoto(bitmap, "JPEG_" + UUID.randomUUID())
-                } //TODO: Handle if photo is not saved (Use WorkManager)
-            }
-        }
-    }
-
     fun buyProduct(product: Product) {
         Basket.addProduct(product)
     }
@@ -150,6 +145,24 @@ class MainViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         job.cancel()
+    }
+
+    fun setImage(imageUri: Uri?, isFromCamera: Boolean) {
+        val imageBitmap = imagePicker.getImageBitmap(imageUri, isFromCamera)
+        _stateLiveData.value = getState().copy(avatarImage = imageBitmap)
+
+        uiCoroutineScope.launch {
+            withContext(Dispatchers.Default) {
+                imagePicker.saveImageToInternalStorage(imageUri, isFromCamera)
+                imagePicker.imagePath?.let { BackgroundHelper.saveUserAvatar(it, getApplication<App>()) }
+            }
+        }
+    }
+
+    fun pickUserImage() {
+        val cameraIntent = imagePicker.getCaptureIntent()
+        val galleryIntent = imagePicker.getPickImageIntent()
+        setCommand(StartImagePicking(cameraIntent, galleryIntent))
     }
 }
 
@@ -164,5 +177,6 @@ data class MainViewState(
 
 sealed class MainCommand
 class ShowError(val exception: Exception) : MainCommand()
+class StartImagePicking(val cameraIntent: Intent?, val galleryIntent: Intent) : MainCommand()
 object ShowNoInternet : MainCommand()
 object StartLoginScreen : MainCommand()
