@@ -1,13 +1,17 @@
 package com.example.vshcheglov.webshop
 
 import android.app.Application
+import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.example.vshcheglov.webshop.presentation.di.components.AppComponent
 import com.example.vshcheglov.webshop.presentation.di.components.DaggerAppComponent
 import com.example.vshcheglov.webshop.presentation.di.modules.*
 import com.example.vshcheglov.webshop.presentation.helpres.Encryptor
+import com.example.vshcheglov.webshop.presentation.main.helpers.AvatarWorkerFactory
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import timber.log.Timber
+import javax.inject.Inject
 
 
 class App : Application() {
@@ -16,11 +20,11 @@ class App : Application() {
         lateinit var appComponent: AppComponent
     }
 
+    @Inject
+    lateinit var avatarWorkerFactory: AvatarWorkerFactory
+
     override fun onCreate() {
         super.onCreate()
-
-        initTimber()
-        initRealmConfiguration()
 
         appComponent = DaggerAppComponent.builder()
             .productNetworkModule(ProductNetworkModule())
@@ -28,10 +32,27 @@ class App : Application() {
             .userStorageModule(UserStorageModule())
             .userCredentialsStorageModule(UserCredentialsStorageModule())
             .appModule(AppModule(this))
+            .imagePickHelperModule(ImagePickHelperModule())
             .mappersModule(MappersModule())
             .dataProviderModule(DataProviderModule())
+            .workManagerModule(WorkManagerModule())
             .encryptorModule(EncryptorModule())
             .build()
+
+        appComponent.inject(this)
+
+        initTimber()
+        initRealmConfiguration()
+        initWorkerFactory()
+    }
+
+    private fun initWorkerFactory() {
+        WorkManager.initialize(
+            this,
+            Configuration.Builder()
+                .setWorkerFactory(avatarWorkerFactory)
+                .build()
+        )
     }
 
     private fun initRealmConfiguration() {

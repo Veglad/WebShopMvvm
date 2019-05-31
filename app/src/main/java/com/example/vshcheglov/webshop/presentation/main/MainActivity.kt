@@ -28,23 +28,13 @@ import android.app.Activity
 import android.content.ComponentName
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
-import android.os.Environment
-import android.provider.MediaStore
-import androidx.core.content.FileProvider
 import android.widget.ImageView
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.example.vshcheglov.webshop.BuildConfig
 import com.example.vshcheglov.webshop.presentation.helpers.ImageLoaderManager
 import com.example.vshcheglov.webshop.presentation.helpers.Router
-import java.io.File
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -57,7 +47,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navHeaderUserImage: ImageView
     private lateinit var navHeaderImageProgressBar: ProgressBar
     private lateinit var navMainHeader: View
-    private lateinit var currentPhotoPath: String
     private var snackbar: Snackbar? = null
     private val productsRecyclerAdapter = ProductsRecyclerAdapter(this)
     private val searchRecyclerAdapter = SearchRecyclerAdapter(this)
@@ -125,6 +114,7 @@ class MainActivity : AppCompatActivity() {
             is ShowError -> showError(command.exception)
             is ShowNoInternet -> showNoInternetWarning()
             is StartLoginScreen -> Router.showLogin(this)
+            is StartImagePicking -> startActivityForImageResult(command.galleryIntent, command.cameraIntent)
         }
     }
 
@@ -175,13 +165,15 @@ class MainActivity : AppCompatActivity() {
 
         navHeaderUserImage.setOnClickListener {
             mainDrawerLayout.closeDrawer(GravityCompat.START)
-            startActivityForImageResult()
+            viewModel.pickUserImage()
         }
     }
 
-    private fun startActivityForImageResult() {
-        val galleryIntent = getPickImageIntent()
-        val cameraIntent = getCaptureIntent()
+    private fun startActivityForImageResult(galleryIntent: Intent, cameraIntent: Intent?) {
+        if (cameraIntent == null) {
+            startActivityForResult(galleryIntent, PICK_IMAGE_REQUEST_CODE)
+            return
+        }
 
         val openInChooser = Intent.createChooser(cameraIntent, resources.getString(R.string.set_picture_with))
 
@@ -215,46 +207,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getPickImageIntent() = Intent(Intent.ACTION_PICK).also { imagePickIntent ->
-        imagePickIntent.type = "image/*"
-        val mimeTypes = arrayOf("image/jpeg", "image/png")
-        imagePickIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
-    }
-
-    private fun getCaptureIntent() = Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
-        takePictureIntent.resolveActivity(packageManager)?.also {
-            // Create the File where the photo should go
-            val photoFile: File? = try {
-                createImageFile()
-            } catch (ex: IOException) {
-                Toast.makeText(this, resources.getString(R.string.taking_photo_error), Toast.LENGTH_LONG).show()
-                null
-            }
-            photoFile?.also {
-                val photoURI: Uri = FileProvider.getUriForFile(
-                    this,
-                    BuildConfig.APPLICATION_ID + ".provider",
-                    it
-                )
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-            }
-        }
-    }
-
-    private fun createImageFile(): File {
-        // Create an image file name
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile(
-            "JPEG_${timeStamp}_", /* prefix */
-            ".jpg", /* suffix */
-            storageDir /* directory */
-        ).apply {
-            // Save a file: path for use with ACTION_VIEW intents
-            currentPhotoPath = absolutePath
-        }
-    }
-
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK ||
@@ -262,39 +214,9 @@ class MainActivity : AppCompatActivity() {
             requestCode == PICK_IMAGE_REQUEST_CODE && resultCode != Activity.RESULT_CANCELED
         ) {
             when (requestCode) {
-                PICK_IMAGE_REQUEST_CODE -> {
-                    val selectedImage: Uri
-                    val isPhotoFromCamera = data == null
-                    selectedImage = if (isPhotoFromCamera) {
-                        Uri.parse("file://$currentPhotoPath")
-                    } else {
-                        data?.data ?: kotlin.run {
-                            Toast.makeText(
-                                this,
-                                resources.getString(R.string.taking_photo_error), Toast.LENGTH_LONG
-                            ).show()
-                            return
-                        }
-                    }
-
-                    val profilePhotoBitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedImage)
-                    profilePhotoBitmap?.let {
-                        currentPhotoPath = ""
-                        viewModel.updateUserProfilePhoto(profilePhotoBitmap)
-                    }
-
-                    if (currentPhotoPath.isNotEmpty()) {
-                        deleteTempPhotoFile(currentPhotoPath)
-                    }
-                }
+                PICK_IMAGE_REQUEST_CODE -> viewModel.setImage(data?.data, data?.data == null)
             }
         }
-    }
-
-
-    private fun deleteTempPhotoFile(currentPhotoPath: String) {
-        val file = File(currentPhotoPath)
-        file.delete()
     }
 
     private fun showLoading(isLoading: Boolean) {

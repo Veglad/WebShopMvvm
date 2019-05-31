@@ -1,5 +1,6 @@
 package com.example.vshcheglov.webshop.presentation.di.components
 
+import com.example.vshcheglov.webshop.App
 import com.example.vshcheglov.webshop.data.DataProvider
 import com.example.vshcheglov.webshop.data.entities.mappers.RealmOrderMapper
 import com.example.vshcheglov.webshop.data.entities.mappers.RealmResponseOrderMapper
@@ -26,11 +27,14 @@ import javax.inject.Singleton
         AppModule::class,
         DataProviderModule::class,
         MappersModule::class,
-        EncryptorModule::class
+        EncryptorModule::class,
+        WorkManagerModule::class,
+        ImagePickHelperModule::class
     ]
 )
 interface AppComponent {
     fun inject(mainPresenter: MainViewModel)
+    fun inject(app: App)
     fun inject(basketPresenter: BasketViewModel)
     fun inject(networkDataSource: ProductNetworkDataSource)
     fun inject(productRepository: ProductRepository)
