@@ -16,6 +16,12 @@ object ImageLoaderManager {
             .into(imageView)
     }
 
+    fun loadImage(imageView: ImageView, @DrawableRes drawable: Int = R.drawable.no_image) {
+        Glide.with(imageView)
+            .load(drawable)
+            .into(imageView)
+    }
+
     fun loadCircularImage(imageView: ImageView, @DrawableRes placeholderId: Int) {
         Glide.with(imageView).load(placeholderId)
             .apply(RequestOptions.circleCropTransform())
