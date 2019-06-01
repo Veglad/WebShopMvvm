@@ -56,12 +56,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun forceLoadProducts(isNetworkAvailable: Boolean) {
-        if (isNetworkAvailable) {
-            fetchProducts()
-        } else {
+        if (!isNetworkAvailable) {
             setCommand(ShowNoInternet)
-            _stateLiveData.value = getState().copy(isLoading = false)
         }
+
+        fetchProducts()
     }
 
     private fun fetchProducts() {
