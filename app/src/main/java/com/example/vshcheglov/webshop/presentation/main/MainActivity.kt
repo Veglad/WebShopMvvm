@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
     private fun loadProducts() {
         val isNetworkAvailable = isNetworkAvailable()
 
-        setErrorVisibility(!isNetworkAvailable)
+        setErrorVisibility(false)
         viewModel.forceLoadProducts(isNetworkAvailable)
         if (isNetworkAvailable) {
             snackbar?.dismiss()
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity() {
         showUserEmail(state.userEmail)
         setUserAvatarImage(state.avatarImage)
 
-        if (mainProductsLayout.visibility == View.VISIBLE) {
+        if (isNeedToUpdateMainLists()) {
             showLoading(state.isLoading)
             showProductList(state.productList)
             showPromotionalProductList(state.promotionalProductList)
@@ -130,6 +130,9 @@ class MainActivity : AppCompatActivity() {
             showSearchedProducts(state.searchProductList)
         }
     }
+
+    private fun isNeedToUpdateMainLists() = mainProductsLayout.visibility == View.VISIBLE ||
+            mainErrorLayout.visibility == View.VISIBLE
 
     private fun onBuyClicked(product: Product) {
         viewModel.buyProduct(product)

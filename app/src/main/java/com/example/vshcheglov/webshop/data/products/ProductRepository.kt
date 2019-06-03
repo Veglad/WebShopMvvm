@@ -25,6 +25,10 @@ class ProductRepository {
             productList = storage.getProductsFromDb()
         }
 
+        if (productList.isEmpty()) {
+            productList = storage.getProductsFromDb()
+        }
+
         return productList
     }
 
