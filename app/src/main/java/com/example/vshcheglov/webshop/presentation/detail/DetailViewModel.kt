@@ -17,15 +17,17 @@ class DetailViewModel : ViewModel() {
     private val _commandLiveData: MutableLiveData<EventWithContent<DetailCommand>> = MutableLiveData()
     val commandLiveData: LiveData<EventWithContent<DetailCommand>> = _commandLiveData
 
+    val basketItems = Basket.productsNumber
+
     private fun getState() = stateLiveData.value!!
 
     fun showProductInfo(product: Product?) {
         _stateLiveData.value = getState().copy(product = product ?: Product())
     }
 
+
     fun buyProduct() {
         Basket.addProduct(getState().product)
-        _commandLiveData.value = EventWithContent(StartBasketScreen)
     }
 }
 

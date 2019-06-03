@@ -11,6 +11,7 @@ import com.example.vshcheglov.webshop.R
 import com.example.vshcheglov.webshop.domain.Product
 import com.example.vshcheglov.webshop.presentation.helpers.ImageLoaderManager
 import com.example.vshcheglov.webshop.presentation.helpers.Router
+import com.example.vshcheglov.webshop.presentation.helpers.custom_drawable.CountDrawableHelper
 import kotlinx.android.synthetic.main.activity_detail.*
 
 
@@ -23,6 +24,9 @@ class DetailActivity : AppCompatActivity() {
     private val viewModel: DetailViewModel by lazy {
         ViewModelProviders.of(this).get(DetailViewModel::class.java)
     }
+
+    private var menu: Menu? = null
+    private var itemsNumber: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +46,7 @@ class DetailActivity : AppCompatActivity() {
 
     private fun initViewModelObservers() {
         viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
+        viewModel.basketItems.observe(this, Observer { basketItems -> updateBasketItems(basketItems) })
         viewModel.commandLiveData.observe(this, Observer { commandEvent ->
             commandEvent.getContentIfNotHandled()?.let { command -> performCommand(command) }
         })
@@ -49,6 +54,17 @@ class DetailActivity : AppCompatActivity() {
 
     private fun updateUi(state: DetailViewState) {
         showProductInfo(state.product)
+    }
+
+    private fun updateBasketItems(basketItems: Int) {
+        if (menu == null) {
+            itemsNumber = basketItems
+        } else {
+            menu?.let {
+                val basketMenuItem = it.findItem(R.id.actionDetailBasket)
+                CountDrawableHelper.setCount(this, basketItems.toString(), basketMenuItem)
+            }
+        }
     }
 
     private fun showProductInfo(product: Product) {
@@ -81,7 +97,9 @@ class DetailActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        this.menu = menu
         menuInflater.inflate(R.menu.detail_menu, menu)
+        updateBasketItems(itemsNumber)
         return true
     }
 

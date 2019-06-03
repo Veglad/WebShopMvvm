@@ -1,16 +1,17 @@
 package com.example.vshcheglov.webshop.domain
 
+import androidx.lifecycle.MutableLiveData
+
 object Basket {
 
-    var productToCountList
-            = mutableListOf<Pair<Product, Int>>()
+    var productToCountList = mutableListOf<Pair<Product, Int>>()
         private set
 
     var size = 0
         get() = productToCountList.size
         private set
 
-    var productsNumber = 0
+    var productsNumber: MutableLiveData<Int> = MutableLiveData<Int>().apply { value = 0 }
 
     var totalPrice = 0.0
 
@@ -36,7 +37,9 @@ object Basket {
     }
 
     private fun updateBasketWithNewProduct(product: Product) {
-        productsNumber++
+        productsNumber.value?.let {
+            productsNumber.value = it + 1
+        }
         totalPrice += product.price
         totalPriceWithDiscount += product.priceWithDiscount
     }
@@ -60,19 +63,19 @@ object Basket {
     }
 
     private fun updateBasketWithRemovedProduct(productToCount: Pair<Product, Int>) {
-        productsNumber--
+        productsNumber.value?.let { productsNumber.value = it - 1 }
         totalPrice -= productToCount.first.price
         totalPriceWithDiscount -= productToCount.first.priceWithDiscount
     }
 
     fun getSameProductPrice(productId: Int): Double {
-        val productIndex = productToCountList.indexOfFirst { it.first.id == productId}
+        val productIndex = productToCountList.indexOfFirst { it.first.id == productId }
         return productToCountList[productIndex].first.price * productToCountList[productIndex].second
     }
 
 
-    fun getSameProductDiscountPrice(productId: Int): Double{
-        val productIndex = productToCountList.indexOfFirst { it.first.id == productId}
+    fun getSameProductDiscountPrice(productId: Int): Double {
+        val productIndex = productToCountList.indexOfFirst { it.first.id == productId }
         return productToCountList[productIndex].first.priceWithDiscount * productToCountList[productIndex].second
     }
 
@@ -84,7 +87,7 @@ object Basket {
     }
 
     private fun updateBasketWithRemovedEntry(productToCount: Pair<Product, Int>) {
-        productsNumber -= productToCount.second
+        productsNumber.value?.let { productsNumber.value = it - productToCount.second }
         totalPrice -= productToCount.first.price * productToCount.second
         totalPriceWithDiscount -= productToCount.first.priceWithDiscount * productToCount.second
     }
@@ -96,7 +99,7 @@ object Basket {
     }
 
     private fun updateBasketWithNewEntry(productToCount: Pair<Product, Int>) {
-        productsNumber += productToCount.second
+        productsNumber.value?.let { productsNumber.value = it + productToCount.second }
         totalPrice += productToCount.first.price * productToCount.second
         totalPriceWithDiscount += productToCount.first.priceWithDiscount * productToCount.second
     }
@@ -104,7 +107,7 @@ object Basket {
     fun clear() {
         size = 0
         productToCountList.clear()
-        productsNumber = 0
+        productsNumber.value = 0
         totalPrice = 0.0
         totalPriceWithDiscount = 0.0
     }

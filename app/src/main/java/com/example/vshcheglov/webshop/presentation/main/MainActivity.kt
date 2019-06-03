@@ -35,6 +35,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.vshcheglov.webshop.presentation.helpers.ImageLoaderManager
 import com.example.vshcheglov.webshop.presentation.helpers.Router
+import com.example.vshcheglov.webshop.presentation.helpers.custom_drawable.CountDrawableHelper
 
 class MainActivity : AppCompatActivity() {
 
@@ -56,12 +57,16 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var toggle: ActionBarDrawerToggle
     private var isErrorVisible = false
+    private var menu: Menu? = null
+
+    private var itemsNumber: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         viewModel.stateLiveData.observe(this, Observer { state -> updateUi(state) })
+        viewModel.basketItems.observe(this, Observer { basketItems -> updateBasketItems(basketItems) })
         viewModel.commandLiveData.observe(this, Observer { commandEvent ->
             commandEvent.getContentIfNotHandled()?.let { command -> performCommand(command) }
         })
@@ -97,6 +102,14 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         initNavigationDrawer()
+    }
+
+    private fun updateBasketItems(basketItems: Int) {
+        itemsNumber = basketItems
+        menu?.let {
+            val basketMenuItem = it.findItem(R.id.actionBasket)
+            CountDrawableHelper.setCount(this, basketItems.toString(), basketMenuItem)
+        }
     }
 
     private fun loadProducts() {
@@ -136,7 +149,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun onBuyClicked(product: Product) {
         viewModel.buyProduct(product)
-        Router.showBasket(this)
     }
 
     private fun initNavigationDrawer() {
@@ -312,6 +324,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         if (isErrorVisible) return false
 
+        this.menu = menu
+
         menu?.let {
             menuInflater.inflate(R.menu.main_menu, menu)
             val searchItem = menu.findItem(R.id.actionSearch)
@@ -354,6 +368,7 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
+        updateBasketItems(itemsNumber)
 
         return true
     }

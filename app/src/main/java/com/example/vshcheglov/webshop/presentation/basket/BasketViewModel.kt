@@ -40,7 +40,7 @@ class BasketViewModel : ViewModel() {
 
     fun initProductListWithBasketInfo() {
         val state = getUpdatedStateWithBasketInfo()
-        state.isBasketEmpty = Basket.productsNumber == 0
+        state.isBasketEmpty = Basket.productsNumber.value == 0
 
         if (!state.isBasketEmpty) {
             val basketCardList = productBasketCardMapper.map(Basket)
@@ -82,7 +82,7 @@ class BasketViewModel : ViewModel() {
 
     private fun getUpdatedStateWithBasketInfo() = getState().copy(
         basketAmount = Basket.totalPriceWithDiscount,
-        basketItemNumber = Basket.productsNumber
+        basketItemNumber = Basket.productsNumber.value ?: 0
     )
 
     // Pass deleted card item as a parameter, restore it as event with Pair<position, data>
@@ -95,7 +95,7 @@ class BasketViewModel : ViewModel() {
         setCommand(RemoveBasketCard(position))
 
         _stateLiveData.value = getUpdatedStateWithBasketInfo().also { state ->
-            state.isBasketEmpty = Basket.productsNumber == 0
+            state.isBasketEmpty = Basket.productsNumber.value == 0
         }
     }
 
@@ -103,7 +103,7 @@ class BasketViewModel : ViewModel() {
         Basket.addProductToCountEntry(productToCount, deletedIndex)
 
         _stateLiveData.value = getUpdatedStateWithBasketInfo().also { state ->
-            state.isBasketEmpty = Basket.productsNumber == 0
+            state.isBasketEmpty = Basket.productsNumber.value == 0
         }
 
         setCommand(RestoreBasketCard(deletedIndex))

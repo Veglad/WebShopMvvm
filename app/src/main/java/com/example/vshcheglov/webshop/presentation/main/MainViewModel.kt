@@ -43,6 +43,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _commandLiveData: MutableLiveData<EventWithContent<MainCommand>> = MutableLiveData()
     val commandLiveData: LiveData<EventWithContent<MainCommand>> = _commandLiveData
 
+    val basketItems = Basket.productsNumber
+
     private fun getState() = stateLiveData.value!!
 
     init {

@@ -2,4 +2,5 @@
 <resources>
     <dimen name="primary_corner_radius">4dp</dimen>
     <dimen name="nav_main_header_height">192dp</dimen>
+    <dimen name="badge_count_textsize">12sp</dimen>
 </resources>

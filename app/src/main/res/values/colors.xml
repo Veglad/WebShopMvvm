@@ -14,6 +14,7 @@
     <color name="dark_gray">#171717</color>
     <color name="gray_transparent">#AA333333</color>
     <color name="gray">#333</color>
+    <color name="icon_count_bg">#E59B10</color>
     <color name="transparent">#00000000</color>
 
     <color name="dialogPositiveColor">#138721</color>

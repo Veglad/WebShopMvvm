@@ -8,6 +8,6 @@
           app:actionViewClass="androidx.appcompat.widget.SearchView"/>
     <item android:id="@+id/actionBasket"
           android:title="@string/basket"
-          android:icon="@drawable/basket_white"
+          android:icon="@drawable/basket_count"
           app:showAsAction="ifRoom"/>
 </menu>
