@@ -6,13 +6,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".SplashActivity">
-
-    <ImageView
-            android:id="@+id/splashImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"/>
-
     <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,5 +21,4 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:text="WebShop" app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintVertical_bias="0.461"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

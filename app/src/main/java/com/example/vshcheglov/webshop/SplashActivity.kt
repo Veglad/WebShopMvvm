@@ -32,8 +32,6 @@ class SplashActivity : AppCompatActivity() {
 
         App.appComponent.inject(this)
 
-        ImageLoaderManager.loadImage(splashImage, R.drawable.splash_image)
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             animateTextView()
         }
