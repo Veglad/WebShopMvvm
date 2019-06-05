@@ -242,20 +242,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showNoInternetWarning() {
-        val isNetworkAvailable = isNetworkAvailable()
         snackbar = Snackbar.make(
             mainFrameLayout,
             getString(R.string.no_internet_connection_warning), Snackbar.LENGTH_INDEFINITE
-        )
-        snackbar?.setAction(getString(R.string.try_again_button)) {
-            if (isNetworkAvailable) {
-                setErrorVisibility(false)
-            }
-
-            viewModel.loadProducts(isNetworkAvailable)
-            snackbar?.dismiss()
+        ).apply {
+            setAction(getString(R.string.try_again_button)) { loadProducts() }
+            show()
         }
-        snackbar?.show()
     }
 
     private fun showError(exception: Exception) {
