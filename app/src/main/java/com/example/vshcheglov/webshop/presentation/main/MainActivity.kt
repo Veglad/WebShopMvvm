@@ -224,10 +224,7 @@ class MainActivity : AppCompatActivity() {
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK ||
-            //Always returns requestCode == -1 TODO: Investigate problem
-            requestCode == PICK_IMAGE_REQUEST_CODE && resultCode != Activity.RESULT_CANCELED
-        ) {
+        if (resultCode == Activity.RESULT_OK) {
             val imageUri = data?.data
             when (requestCode) {
                 PICK_IMAGE_REQUEST_CODE -> viewModel.setImage(imageUri, imageUri == null)
