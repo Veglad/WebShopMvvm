@@ -59,7 +59,7 @@ class SplashActivity : AppCompatActivity() {
         val set = AnimatorSet()
         set.play(animationX)
             .with(animationY)
-        set.duration = 1000
+        set.duration = 500
         set.interpolator = DecelerateInterpolator()
         set.start()
     }
