@@ -28,23 +28,29 @@ class SplashActivity : AppCompatActivity() {
 
         App.appComponent.inject(this)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            animateTextView()
+        uiCoroutineScope.launch {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                animateTextView()
+            }
+
+            delay(1000)
+
+            resolveStartScreen()
+        }
+    }
+
+    private suspend fun resolveStartScreen() {
+        val isStartLogin = try {
+            val user = withContext(Dispatchers.IO) { dataProvider.getCurrentUser() }
+            user.email == null
+        } catch (ex: Exception) {
+            true
         }
 
-        uiCoroutineScope.launch {
-            val isStartLogin = try {
-                val user = withContext(Dispatchers.IO) { dataProvider.getCurrentUser() }
-                user.email == null
-            } catch (ex: Exception) {
-                true
-            }
-
-            if (isStartLogin) {
-                Router.showLogin(this@SplashActivity)
-            } else {
-                Router.showMain(this@SplashActivity)
-            }
+        if (isStartLogin) {
+            Router.showLogin(this@SplashActivity)
+        } else {
+            Router.showMain(this@SplashActivity)
         }
     }
 
@@ -55,8 +61,13 @@ class SplashActivity : AppCompatActivity() {
         val set = AnimatorSet()
         set.play(animationX)
             .with(animationY)
-        set.duration = 500
+        set.duration = 1000
         set.interpolator = DecelerateInterpolator()
         set.start()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
     }
 }
