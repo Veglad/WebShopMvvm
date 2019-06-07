@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.example.vshcheglov.webshop">
+          package="com.sigma.vshcheglov.webshop">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -14,7 +14,7 @@
             android:required="false"/>
 
     <application
-            android:name=".App"
+            android:name="com.sigma.vshcheglov.webshop.App"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
@@ -22,7 +22,7 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <activity
-                android:name=".SplashActivity"
+                android:name="com.sigma.vshcheglov.webshop.SplashActivity"
                 android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -31,36 +31,36 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".presentation.main.MainActivity"
+                android:name="com.sigma.vshcheglov.webshop.presentation.main.MainActivity"
                 android:screenOrientation="portrait"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:name=".presentation.detail.DetailActivity"
-                android:parentActivityName=".presentation.main.MainActivity"
+                android:name="com.sigma.vshcheglov.webshop.presentation.detail.DetailActivity"
+                android:parentActivityName="com.sigma.vshcheglov.webshop.presentation.main.MainActivity"
                 android:screenOrientation="portrait">
         </activity>
         <activity
-                android:name=".presentation.basket.BasketActivity"
+                android:name="com.sigma.vshcheglov.webshop.presentation.basket.BasketActivity"
                 android:screenOrientation="portrait">
         </activity>
         <activity
-                android:name=".presentation.order.OrderActivity"
+                android:name="com.sigma.vshcheglov.webshop.presentation.order.OrderActivity"
                 android:screenOrientation="portrait"
                 android:theme="@style/AppTheme.BlackMode">
         </activity>
         <activity
-                android:name=".presentation.login.LoginActivity"
+                android:name="com.sigma.vshcheglov.webshop.presentation.login.LoginActivity"
                 android:screenOrientation="portrait"
                 android:theme="@style/AppTheme.BlackMode">
         </activity>
         <activity
-                android:name=".presentation.registration.RegisterActivity"
+                android:name="com.sigma.vshcheglov.webshop.presentation.registration.RegisterActivity"
                 android:screenOrientation="portrait"
                 android:theme="@style/AppTheme.BlackMode">
         </activity>
         <activity
-                android:name=".presentation.purchase.PurchaseActivity"
+                android:name="com.sigma.vshcheglov.webshop.presentation.purchase.PurchaseActivity"
                 android:screenOrientation="portrait"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
