@@ -21,11 +21,11 @@
 #-renamesourcefileattribute SourceFile
 
 # WebShop app
--keep class sigma.vshcheglov.webshop.domain.** { *; }
--keep class sigma.vshcheglov.webshop.data.entities.** { *; }
--keep class sigma.vshcheglov.webshop.presentation.entities.** { *; }
--keep class sigma.vshcheglov.webshop.presentation.purchase.PurchaseViewModel { *; }
--dontwarn sigma.vshcheglov.webshop.data.entities.**
+-keep class com.sigma.vshcheglov.webshop.domain.** { *; }
+-keep class com.sigma.vshcheglov.webshop.data.entities.** { *; }
+-keep class com.sigma.vshcheglov.webshop.presentation.entities.** { *; }
+-keep class com.sigma.vshcheglov.webshop.presentation.purchase.PurchaseViewModel { *; }
+-dontwarn com.sigma.vshcheglov.webshop.data.entities.**
 
 #androidx
 -dontwarn com.google.android.material.**
