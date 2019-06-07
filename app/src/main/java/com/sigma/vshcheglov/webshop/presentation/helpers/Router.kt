@@ -25,7 +25,9 @@ object Router {
     }
 
     fun showLogin(activity: Activity) {
-        activity.startActivity(Intent(activity, LoginActivity::class.java))
+        activity.startActivity(Intent(activity, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        })
     }
 
     fun showRegister(activity: Activity) {
