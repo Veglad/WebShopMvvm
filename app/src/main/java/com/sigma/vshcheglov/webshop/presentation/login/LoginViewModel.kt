@@ -64,12 +64,14 @@ class LoginViewModel : ViewModel() {
         uiCoroutineScope.launch {
             _stateLiveData.value = getState().copy(isLoading = true, userEmail = email)
             try {
-                dataProvider.signInUser(email, password)
+                withContext(Dispatchers.IO) {
+                    dataProvider.signInUser(email, password)
 
-                if (!dataProvider.containsUserCredentials()) {
-                    val encryptedPassword = encryptor.encode(password)
-                    encryptedPassword?.let {
-                        dataProvider.saveUserCredentials(UserCredentials(email, encryptedPassword))
+                    if (!dataProvider.containsUserCredentials()) {
+                        val encryptedPassword = encryptor.encode(password)
+                        encryptedPassword?.let {
+                            dataProvider.saveUserCredentials(UserCredentials(email, encryptedPassword))
+                        }
                     }
                 }
 

@@ -10,10 +10,7 @@ import com.sigma.vshcheglov.webshop.extensions.isEmailValid
 import com.sigma.vshcheglov.webshop.extensions.isPasswordValid
 import com.sigma.vshcheglov.webshop.presentation.helpres.Encryptor
 import com.sigma.vshcheglov.webshop.presentation.helpres.EventWithContent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -72,12 +69,14 @@ class RegisterViewModel : ViewModel() {
         uiCoroutineScope.launch {
             _stateLiveData.value = getState().copy(isLoading = true)
             try {
-                dataProvider.registerUser(email, password)
+                withContext(Dispatchers.IO) {
+                    dataProvider.registerUser(email, password)
 
-                if (!dataProvider.containsUserCredentials()) {
-                    val encryptedPassword = encryptor.encode(password)
-                    encryptedPassword?.let {
-                        dataProvider.saveUserCredentials(User.UserCredentials(email, encryptedPassword))
+                    if (!dataProvider.containsUserCredentials()) {
+                        val encryptedPassword = encryptor.encode(password)
+                        encryptedPassword?.let {
+                            dataProvider.saveUserCredentials(User.UserCredentials(email, encryptedPassword))
+                        }
                     }
                 }
 
